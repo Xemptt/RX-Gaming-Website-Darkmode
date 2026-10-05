@@ -5,7 +5,7 @@ import CartHydration from "@/component/cart-hydration";
 import AppearanceProvider from "@/component/appearance-provider";
 import { siteUrl } from "@/lib/site";
 import storeSettings from "../store-settings.json";
-import { Analytics } from "@vercel/analytics/react";
+import { Analytics } from "@vercel/analytics/next";
 
 const minecraftFont = localFont({
     src: "./fonts/Minecraft.ttf",
