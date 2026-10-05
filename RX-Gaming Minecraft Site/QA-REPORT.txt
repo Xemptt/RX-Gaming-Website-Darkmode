@@ -1,0 +1,89 @@
+RX-GAMING BUG-FIX AND CRITIC REVIEW
+Date: 5 October 2026
+
+RESULT
+Three independent critics each reviewed the project in three rounds. Fixes
+were made between rounds. Every final score is above 8/10.
+
+Critic                         Round 1    Round 2    Round 3
+Functionality / reliability      3.0        7.2        8.6
+Security / reliability           3.2        7.8        8.6
+UX / accessibility               4.5        7.8        8.8
+
+Critic scores are qualitative assessments, not guarantees of zero defects.
+Final critics independently reviewed source. Browser testing and commands
+below were performed by the main agent, not independently by every critic.
+The final Docker SITE_URL finding was fixed and verified within round 3.
+
+MAJOR CORRECTIONS
+- Fixed the ServerCounter props mismatch that prevented production builds.
+- Replaced the wrong-method checkout endpoint with a real POST flow.
+- Corrected Tebex API URLs and replaced permanent loading/demo products with
+  live, realm-filtered catalogs, real currencies and useful error/retry states.
+- Added Java username and trusted customer IP handling, server-side package
+  and quantity validation, same-origin checks, safe redirect validation,
+  streamed request-size limits and cancellation/time limits.
+- Retained cart contents across cancellation/return; synchronized upstream
+  baskets on retry to avoid adding the same packages again.
+- Validated persisted carts and constrained quantities/currencies; handled
+  disabled storage and browser-back restoration of checkout controls.
+- Removed pretend voucher redemption and unsupported payment-success claims.
+- Repaired documents, missing store route, invalid-route handling, assets,
+  merchant links, realm addresses/ports, branding, metadata and sitemap.
+- Server status now queries fixed approved addresses with bounded requests,
+  caching, and distinct offline versus unavailable states.
+- Improved narrow layouts, focus/labels, menu Escape behavior, hidden
+  accordion content, contrast, reduced motion and cursor fallback.
+- Updated Next.js from 16.1.6 to 16.3.8; final npm audit reports zero findings.
+- Hardened Docker build context/runtime and documented public SITE_URL
+  at build time, runtime token/proxy configuration and domain rebuilds.
+
+VERIFICATION
+PASS: npm test -- 17 tests, zero failures.
+PASS: npm run typecheck.
+PASS: final npm run build, including TypeScript and all generated routes.
+PASS: npm audit -- zero known dependency vulnerabilities reported.
+PASS: git diff --check (only Windows line-ending conversion notices).
+
+Regression coverage includes corrupt stored carts, quantity locks, invalid
+package IDs, mixed currencies, redirect restrictions, request body limits,
+abort handling, trusted IP selection, localhost/127.0.0.1 origins, parent
+category mapping, basket creation, verification/resume, retry after partial
+failure, cancellation synchronization and server-status validation/caching.
+
+Read-only live integration checks:
+- Insanecraft catalog returned six live GBP packages.
+- RLCraft catalog returned four live GBP packages.
+- Both realm status endpoints returned player counts; counts are transient
+  and the provider may cache responses for up to five minutes.
+
+Browser checks:
+- Home page at 320, 768, 1024 and 1440 CSS pixels: no horizontal overflow.
+- Voucher, documents, both profiles, careers, store selection, RLCraft store,
+  server details and changelog at 320 CSS pixels: no horizontal overflow or
+  observed broken images. Insanecraft catalog and cart checked separately.
+- Added live product, changed quantity, reloaded: quantity and total persisted.
+- Empty username invokes validation; configured-host failure displays a useful
+  checkout message and preserves the cart with enabled controls.
+- Mobile menu Escape closes it and restores focus; accordion content enters
+  and leaves the accessibility tree correctly.
+- Copy-IP action returned the exact configured host and port to the clipboard.
+- Invalid store/document routes return 404; /store and /documents redirect.
+- Test cart items cleared after testing; local preview left running.
+
+Screenshots: .qa/catalog-desktop.jpg and .qa/home-desktop.jpg.
+Setup and deployment instructions: RUNNING.txt and .env.example.
+
+VERIFICATION LIMITS
+No real payment was made. Checkout integration tests mock Tebex; real payment,
+receipt, cancellation, authentication-provider and in-game delivery behavior
+must be confirmed using the merchant's deployment/payment test workflow.
+Local checkout deliberately refuses an untrusted/missing customer IP and
+offers the official hosted store. Vercel or an explicitly configured trusted
+reverse proxy is required for integrated production checkout.
+Docker was reviewed but not built/run because Docker is unavailable here.
+The changes are local files; the public production site was not deployed.
+
+OPTIONAL FOLLOW-UP
+Product descriptions or links to individual package perks could improve
+pre-purchase information. No critic identified that as a release blocker.

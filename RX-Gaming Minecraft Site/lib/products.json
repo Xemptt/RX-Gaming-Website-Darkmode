@@ -1,0 +1,65 @@
+{
+  "rewardThreshold": 200.00,
+  "rewardProduct": {
+    "id": "reward-rxbox-x3-all",
+    "name": "x3 RX-BOX (BONUS REWARD)",
+    "price": 0,
+    "isPromo": false,
+    "color": "#C084FC",
+    "img": "/szpontbox.png",
+    "category": "other",
+    "mode": "all",
+    "isReward": true,
+    "contents": [
+      {
+        "label": "RX-BOX",
+        "qty": "x3"
+      }
+    ]
+  },
+  "marqueeText": "RX-Gaming • SALE IS LIVE! USE CODE: RX-G • DISCORD: discord.gg/DgPSGVZDUr",
+  "mappings": {
+    "modes": [
+      { "mode": "anarchy", "keywords": ["insanecraft", "insane", "ic"] },
+      { "mode": "survival", "keywords": ["rlcraft", "rl"] },
+      { "mode": "skywars", "keywords": ["coming soon", "soon"] },
+      { "mode": "practice", "keywords": ["future", "locked"] }
+    ],
+    "categories": [
+      { "category": "ranks", "keywords": ["rang", "rank", "vip"] },
+      { "category": "packages", "keywords": ["pakiet", "package", "bundle"] }
+    ]
+  },
+  "products": [
+    {
+      "id": "insanecraft-test-pack",
+      "name": "INSANE CHRONO PACK",
+      "price": 49.99,
+      "originalPrice": 89.99,
+      "isPromo": true,
+      "color": "#22D3EE",
+      "shadowColor": "#0891B2",
+      "img": "/1.png",
+      "category": "packages",
+      "mode": "anarchy",
+      "contents": [
+        { "label": "Insane Crate Key", "qty": "x5" },
+        { "label": "RX-BOX", "qty": "x1" }
+      ]
+    },
+    {
+      "id": "rlcraft-test-pack",
+      "name": "SURVIVALIST PACK",
+      "price": 29.99,
+      "isPromo": false,
+      "color": "#C084FC",
+      "shadowColor": "#7C3AED",
+      "img": "/2.png",
+      "category": "packages",
+      "mode": "survival",
+      "contents": [
+        { "label": "Dragon Scale Key", "qty": "x3" }
+      ]
+    }
+  ]
+}

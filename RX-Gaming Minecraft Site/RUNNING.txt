@@ -1,0 +1,57 @@
+RX-GAMING WEBSITE
+
+Run commands from this directory (the one containing package.json).
+Requires Node.js 22 or newer supported LTS and npm.
+
+LOCAL PREVIEW
+  npm ci
+  npm run dev
+  Open http://localhost:3000
+
+CONFIGURATION
+Copy .env.example to .env.local and fill in your deployment values.
+SITE_URL is the public website origin, not a Minecraft server address. Set it
+before building and keep the same value when running: static metadata, robots
+and sitemap URLs are generated at build time. Rebuild when changing domains.
+For local development set SITE_URL=http://localhost:3000 or leave it unset.
+TEBEX_PUBLIC_TOKEN is your store's Headless API public token.
+The existing NEXT_PUBLIC_TEBEX_PUBLIC_TOKEN name is also supported.
+Never put a private Tebex API key here.
+
+Vercel automatically supplies the trusted customer IP header used by checkout.
+For another production host, TEBEX_CLIENT_IP_HEADER must name a header that
+YOUR reverse proxy overwrites with the actual customer IP. It must contain one
+IPv4/IPv6 address, not a forwarded list. Block direct access to the app origin
+so visitors cannot spoof this header. Set SITE_URL to your HTTPS public origin.
+Do not set TEBEX_CLIENT_IP_HEADER merely to silence the configuration error.
+Local checkout deliberately returns an explanatory error without a trusted
+customer IP; the official hosted Tebex store remains available.
+
+VALIDATION
+  npm test
+  npm run typecheck
+  npm run build
+  npm audit
+
+PRODUCTION
+  npm run build
+  npm start
+Or use Dockerfile. Supply your public origin while building:
+  docker build --build-arg SITE_URL=https://your-website.example -t rx-gaming .
+This sets the same default SITE_URL in the runtime image. Supply the Tebex
+token and trusted proxy configuration when running the container. Do not put
+tokens or secrets in build arguments. .env files and local node_modules are
+excluded from the build context. Rebuild the image if the public origin changes.
+The Docker image runs Next.js standalone output as a non-root user.
+
+PAYMENTS AND STATUS
+Catalog prices, currency and availability come from Tebex. Final taxes,
+discounts, subscription terms and payment totals are confirmed by Tebex.
+The return page cannot independently verify payment and does not clear carts.
+Before enabling purchases on a new deployment, confirm payment, cancellation,
+receipts and in-game delivery through the merchant's test/payment workflow.
+Automated checkout tests use mocked Tebex responses and never charge money.
+Server status uses mcsrvstat.us and may be cached for up to five minutes.
+
+The old sample products.json is retained as source reference, not a catalog
+or checkout fallback. Live numeric package IDs are revalidated server-side.
