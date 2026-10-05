@@ -16,8 +16,7 @@ export default function StandaloneInsanecraftProfile() {
         "Applied Energistics 2 (Digital Storage Networks)",
         "The Twilight Forest (Magical Dimensions & Bosses)",
         "Biomes O' Plenty (Enchanted World Generation)",
-        "Tinkers' Construct (Custom Forged Weaponry)",
-        "Mekanism (Advanced Processing Machinery)"
+        "Tinkers' Construct (Custom Forged Weaponry)"
     ];
 
 

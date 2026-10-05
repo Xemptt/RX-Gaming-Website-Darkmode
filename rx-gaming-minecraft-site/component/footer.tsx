@@ -79,7 +79,7 @@ export default function Footer() {
                         COPYRIGHT {new Date().getFullYear()} {storeSettings.serverName.toUpperCase()}. ALL RIGHTS RESERVED
                     </p>
                     <p className="text-[10px] font-bold text-muted uppercase leading-relaxed tracking-wider text-center md:text-right">
-                        {storeSettings.serverName.toUpperCase()} server is not associated with Mojang or Microsoft in any way.
+                        {storeSettings.serverName.toUpperCase()}  is not associated with Mojang or Microsoft in any way.
                     </p>
                 </div>
 

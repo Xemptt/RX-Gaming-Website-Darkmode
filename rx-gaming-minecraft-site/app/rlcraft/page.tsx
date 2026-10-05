@@ -11,10 +11,9 @@ export default function StandaloneRLCraftProfile() {
     // Curated list of prominent core mods featured within the RLCraft modpack layout
     const modpackList = [
         "Lycanites Mobs (Custom Dangerous Creatures & Bosses)",
-        "Tough As Nails (Thirst & Temperature Survival Mechanics)",
         "Ice and Fire: Dragons (Mythical Creatures & Forged Gear)",
         "Dynamic Surroundings (Immersive Audio & Visuals)",
-        "RLTweaks (Core Pack Adjustments & Balancing)",
+        "RLTweaker2 (Core Pack Adjustments & Balancing)",
         "Better Survival (Additional Weapons & Enchantments)",
         "First Aid (Localized Body Part Damage System)",
         "Waystones (Teleportation Network Systems)"
