@@ -42,6 +42,68 @@ const rankArtwork: Array<{ name: RegExp; slug: string }> = [
   { name: /\binsane\b/i, slug: "insane" },
   { name: /\bdragonborn\b/i, slug: "dragonborn" },
 ];
+const insanecraftRankRewards: Record<string, string> = {
+  extreme: `<h4>Extreme — Starter Rank</h4>
+    <ul>
+      <li>5 homes total</li>
+      <li>/kit extreme</li>
+      <li>Essentials /hat and /workbench</li>
+      <li>Extreme in-game prefix</li>
+      <li>1 Insane Crate Key with this purchase</li>
+      <li>Private beta and whitelist access arranged by staff where available</li>
+    </ul>
+    <p>Every higher Insanecraft rank includes these permissions and the Extreme kit.</p>`,
+  mental: `<h4>Mental — Includes Everything from Extreme</h4>
+    <ul>
+      <li>All Extreme permissions and kit remain included</li>
+      <li>6 homes total</li>
+      <li>/kit mental and Essentials /enderchest</li>
+      <li>1 PlayerVaultsX vault total</li>
+      <li>2 Insane Crate Keys with this purchase</li>
+      <li>Mental in-game prefix</li>
+    </ul>`,
+  loony: `<h4>Loony — Includes Everything from Mental</h4>
+    <ul>
+      <li>All Extreme and Mental permissions and kits remain included</li>
+      <li>7 homes total</li>
+      <li>/kit loony and Essentials /nick</li>
+      <li>2 PlayerVaultsX vaults total</li>
+      <li>4 Insane Crate Keys with this purchase</li>
+      <li>Loony in-game prefix</li>
+    </ul>`,
+  nutty: `<h4>Nutty — Includes Everything from Loony</h4>
+    <ul>
+      <li>All Extreme, Mental and Loony permissions and kits remain included</li>
+      <li>8 homes total</li>
+      <li>/kit nutty, Essentials /repair and /feed</li>
+      <li>3 PlayerVaultsX vaults total</li>
+      <li>6 Insane Crate Keys with this purchase</li>
+      <li>Nutty in-game prefix</li>
+    </ul>`,
+  crazy: `<h4>Crazy — Includes Everything from Nutty</h4>
+    <ul>
+      <li>All Extreme, Mental, Loony and Nutty permissions and kits remain included</li>
+      <li>11 homes total</li>
+      <li>/kit crazy and Essentials /heal</li>
+      <li>4 PlayerVaultsX vaults total</li>
+      <li>8 Insane Crate Keys with this purchase</li>
+      <li>Crazy in-game prefix</li>
+    </ul>`,
+  insane: `<h4>Insane — Includes Everything from Crazy</h4>
+    <ul>
+      <li>All Extreme, Mental, Loony, Nutty and Crazy permissions and kits remain included</li>
+      <li>13 homes total</li>
+      <li>/kit insane and Essentials /fly</li>
+      <li>5 PlayerVaultsX vaults total</li>
+      <li>10 Insane Crate Keys with this purchase</li>
+      <li>Insane in-game prefix</li>
+    </ul>`,
+};
+function getInsanecraftRankRewards(name: string): string | undefined {
+  const title = name.replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+  const match = /^(?:(?:insanecraft|rank|vip)\s+)?(extreme|mental|loony|nutty|crazy|insane)(?:\s+(?:rank|vip|package|pack|upgrade)){0,2}$/i.exec(title);
+  return match ? insanecraftRankRewards[match[1].toLowerCase()] : undefined;
+}
 function getRankArtwork(name: string, category: ProductCategory, mode: ProductMode): string | undefined {
   const realm = mode === "anarchy" ? "insanecraft" : mode === "survival" ? "rlcraft" : undefined;
   const title = name.replace(/[^\p{L}\p{N}]+/gu, " ").trim();
@@ -89,6 +151,7 @@ export async function fetchTebexProducts(mode: string) {
     .filter(product => product.mode === "all" || product.mode === target || (Array.isArray(product.mode) && (product.mode.includes(target) || product.mode.includes("all"))))
     .map(product => ({
       ...product,
+      description: target === "anarchy" ? getInsanecraftRankRewards(product.name) ?? product.description : product.description,
       img: getRankArtwork(product.name, product.category, target) ?? product.img,
     }));
 }

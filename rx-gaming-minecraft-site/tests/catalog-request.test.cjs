@@ -46,11 +46,20 @@ test("realm categories override ambiguous package names and live currency is ret
     process.env.TEBEX_PUBLIC_TOKEN="test-only-token";
     global.fetch=async url=>{
       assert.match(url,/^https:\/\/headless.tebex.io\/api\/accounts\/test-only-token\/categories\?includePackages=1$/);
-      return Response.json({data:[{name:"Insane ranks",parent:{name:"RLCraft"},packages:[{id:1,name:"Insane Rank",total_price:5,currency:"GBP"}]},{name:"Packages",parent:{name:"Insanecraft"},packages:[{id:2,name:"Survival Bundle",total_price:8,currency:"GBP"}]},{name:"Other",parent:{name:"RLCraft"},packages:[{id:3,name:"🐉 Dragonborn",total_price:12,currency:"GBP"}]}]});
+      return Response.json({data:[{name:"Insane ranks",parent:{name:"RLCraft"},packages:[{id:1,name:"Insane Rank",total_price:5,currency:"GBP"}]},{name:"Packages",parent:{name:"Insanecraft"},packages:[{id:2,name:"Survival Bundle",total_price:8,currency:"GBP"}]},{name:"Other",parent:{name:"RLCraft"},packages:[{id:3,name:"🐉 Dragonborn",total_price:12,currency:"GBP"}]},{name:"Ranks",parent:{name:"Insanecraft"},packages:[{id:4,name:"🔵 Extreme",total_price:5,currency:"GBP"},{id:5,name:"🟣 Mental",total_price:10,currency:"GBP"},{id:6,name:"🟤 Loony",total_price:20,currency:"GBP"},{id:7,name:"🔴 Nutty",total_price:30,currency:"GBP"},{id:8,name:"🟠 Crazy",total_price:40,currency:"GBP"},{id:9,name:"🟡 Insane",total_price:50,currency:"GBP"}]}]});
     };
     const {fetchTebexProducts}=loadTs("lib/tebex.ts");
     const rl=await fetchTebexProducts("rlcraft");assert.deepEqual(rl.map(p=>p.id),["1","3"]);assert.equal(rl[0].currency,"GBP");assert.equal(rl[1].img,"/ranks/rlcraft/rank-dragonborn.webp");
-    assert.deepEqual((await fetchTebexProducts("insanecraft")).map(p=>p.id),["2"]);
+    const ic=await fetchTebexProducts("insanecraft");assert.deepEqual(ic.map(p=>p.id),["2","4","5","6","7","8","9"]);
+    const expectedRewards=[
+      ["5 homes total","1 Insane Crate Key"],
+      ["All Extreme permissions","6 homes total","1 PlayerVaultsX vault total","2 Insane Crate Keys"],
+      ["All Extreme and Mental permissions","7 homes total","2 PlayerVaultsX vaults total","4 Insane Crate Keys"],
+      ["All Extreme, Mental and Loony permissions","8 homes total","3 PlayerVaultsX vaults total","6 Insane Crate Keys"],
+      ["All Extreme, Mental, Loony and Nutty permissions","11 homes total","4 PlayerVaultsX vaults total","8 Insane Crate Keys"],
+      ["All Extreme, Mental, Loony, Nutty and Crazy permissions","13 homes total","5 PlayerVaultsX vaults total","10 Insane Crate Keys"],
+    ];
+    for (const [index,benefits] of expectedRewards.entries()) for (const benefit of benefits) assert.ok(ic[index+1].description.includes(benefit),`${ic[index+1].name} includes ${benefit}`);
     global.fetch=async()=>new Response("{}",{status:503});
     await assert.rejects(fetchTebexProducts("rlcraft"));
   }finally{global.fetch=oldFetch;if(oldToken===undefined)delete process.env.TEBEX_PUBLIC_TOKEN;else process.env.TEBEX_PUBLIC_TOKEN=oldToken;}
