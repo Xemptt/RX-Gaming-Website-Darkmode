@@ -182,15 +182,28 @@ export async function POST(request: Request) {
 
       const rawAuthUrl = auth[0]?.url;
       let authUrlHost = "invalid-url";
+      let authUrlParseable = false;
       if (typeof rawAuthUrl === "string") {
         try {
           const parsedAuthUrl = new URL(rawAuthUrl);
           authUrlHost = `${parsedAuthUrl.protocol}//${parsedAuthUrl.host}`;
+          authUrlParseable = true;
         } catch {
           // Keep the diagnostic limited to the host; never log the full URL.
         }
       }
-      console.warn("[Tebex checkout] Authentication URL host:", authUrlHost);
+      const firstAuthOption = auth[0];
+      console.warn("[Tebex checkout] Authentication response shape:", {
+        firstOptionType: firstAuthOption === null ? "null" : typeof firstAuthOption,
+        firstOptionKeys:
+          firstAuthOption && typeof firstAuthOption === "object"
+            ? Object.keys(firstAuthOption)
+            : [],
+        nameType: typeof firstAuthOption?.name,
+        urlType: typeof rawAuthUrl,
+        urlParseable: authUrlParseable,
+        urlHost: authUrlHost,
+      });
 
       const authUrl = trustedTebexUrl(rawAuthUrl);
 
