@@ -33,6 +33,20 @@ function detectMode(text: string): ProductMode {
   if (/practice/i.test(text)) return "practice";
   return "all";
 }
+const rankArtwork: Array<{ name: RegExp; slug: string }> = [
+  { name: /\bextreme\b/i, slug: "extreme" },
+  { name: /\bmental\b/i, slug: "mental" },
+  { name: /\bloony\b/i, slug: "loony" },
+  { name: /\bnutty\b/i, slug: "nutty" },
+  { name: /\bcrazy\b/i, slug: "crazy" },
+  { name: /\binsane\b/i, slug: "insane" },
+];
+function getRankArtwork(name: string, category: ProductCategory, mode: ProductMode): string | undefined {
+  if (category !== "ranks") return undefined;
+  const realm = mode === "anarchy" ? "insanecraft" : mode === "survival" ? "rlcraft" : undefined;
+  const rank = rankArtwork.find(entry => entry.name.test(name));
+  return realm && rank ? `/ranks/${realm}/rank-${rank.slug}.webp` : undefined;
+}
 export async function fetchCatalog(signal?: AbortSignal): Promise<Product[]> {
   const json = await tebexRequest(accountPath("/categories?includePackages=1"), { signal });
   if (!Array.isArray(json.data)) throw new StoreUnavailableError("The store returned an invalid catalog.");
@@ -67,5 +81,10 @@ export async function fetchCatalog(signal?: AbortSignal): Promise<Product[]> {
 export async function fetchTebexProducts(mode: string) {
   const target = getRealm(mode)?.mode;
   if (!target) return [];
-  return (await fetchCatalog()).filter(product => product.mode === "all" || product.mode === target || (Array.isArray(product.mode) && (product.mode.includes(target) || product.mode.includes("all"))));
+  return (await fetchCatalog())
+    .filter(product => product.mode === "all" || product.mode === target || (Array.isArray(product.mode) && (product.mode.includes(target) || product.mode.includes("all"))))
+    .map(product => ({
+      ...product,
+      img: getRankArtwork(product.name, product.category, target) ?? product.img,
+    }));
 }
