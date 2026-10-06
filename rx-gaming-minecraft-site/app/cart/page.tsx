@@ -11,11 +11,17 @@ export default function CartPage() {
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
   const [username, setUsername] = useState("");
+  const [voucherType, setVoucherType] = useState<"coupon" | "giftcard">("coupon");
+  const [voucherCode, setVoucherCode] = useState("");
   const [resume, setResume] = useState(false);
   const pending = useRef(false);
   useEffect(() => {
     setResume(new URLSearchParams(window.location.search).get("resume") === "1");
-    try { setUsername(sessionStorage.getItem("rx-checkout-username") || ""); } catch {}
+    try {
+      setUsername(sessionStorage.getItem("rx-checkout-username") || "");
+      setVoucherCode(sessionStorage.getItem("rx-voucher-code") || "");
+      setVoucherType(sessionStorage.getItem("rx-voucher-type") === "giftcard" ? "giftcard" : "coupon");
+    } catch {}
     const restore = () => { pending.current = false; setProcessing(false); };
     window.addEventListener("pageshow", restore);
     return () => window.removeEventListener("pageshow", restore);
@@ -25,10 +31,19 @@ export default function CartPage() {
   const checkout = async () => {
     if (pending.current || !items.length) return;
     pending.current = true; setProcessing(true); setError("");
-    try { sessionStorage.setItem("rx-checkout-username", username.trim()); } catch {}
+    try {
+      sessionStorage.setItem("rx-checkout-username", username.trim());
+      if (voucherCode.trim()) {
+        sessionStorage.setItem("rx-voucher-type", voucherType);
+        sessionStorage.setItem("rx-voucher-code", voucherCode.trim());
+      } else {
+        sessionStorage.removeItem("rx-voucher-type");
+        sessionStorage.removeItem("rx-voucher-code");
+      }
+    } catch {}
     try {
       const response = await fetch("/api/tebex/checkout", { method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: username.trim(), resume, items: items.map(item => ({ packageId: item.product.id, quantity: item.quantity })) }), signal: AbortSignal.timeout(60000) });
+        body: JSON.stringify({ username: username.trim(), resume, voucherType, voucherCode: voucherCode.trim(), items: items.map(item => ({ packageId: item.product.id, quantity: item.quantity })) }), signal: AbortSignal.timeout(60000) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Unable to start checkout.");
       const url = trustedTebexUrl(data.checkoutUrl);
@@ -67,7 +82,15 @@ export default function CartPage() {
             <label htmlFor="minecraft-username" className="block font-bold">Minecraft Java username</label>
             <input id="minecraft-username" name="username" type="text" required minLength={3} maxLength={16} pattern="[A-Za-z0-9_]{3,16}" value={username} disabled={processing} onChange={event => setUsername(event.target.value)} autoComplete="off" spellCheck={false} aria-describedby="username-help" className="w-full border-4 border-frame p-3" />
             <p id="username-help" className="text-xs">Use the exact Java username that should receive these items.</p>
-            <p className="text-sm leading-relaxed">Tebex confirms your email, taxes and final price. Apply promo codes or gift cards during checkout. No payment is taken on this page.</p>
+            <label htmlFor="voucher-type" className="block font-bold">Voucher type</label>
+            <select id="voucher-type" value={voucherType} disabled={processing} onChange={event => setVoucherType(event.target.value as "coupon" | "giftcard")} className="w-full border-4 border-frame p-3">
+              <option value="coupon">Discount code</option>
+              <option value="giftcard">Gift card</option>
+            </select>
+            <label htmlFor="voucher-code" className="block font-bold">{voucherType === "giftcard" ? "Gift card number" : "Discount code"}</label>
+            <input id="voucher-code" type="text" value={voucherCode} disabled={processing} maxLength={128} autoComplete="off" spellCheck={false} onChange={event => setVoucherCode(event.target.value)} aria-describedby="voucher-help" className="w-full border-4 border-frame p-3" />
+            <p id="voucher-help" className="text-xs">Optional. Tebex will validate your code and confirm the final total.</p>
+            <p className="text-sm leading-relaxed">Tebex confirms your email, taxes and final price. No payment is taken on this page.</p>
             <p className="text-sm"><Link href="/documents/1" className="underline">Terms of Service</Link> · <Link href="/documents/2" className="underline">Privacy Policy</Link></p>
             {resume && <p role="status" className="text-sm font-bold">Back from account verification? Continue to prepare your order.</p>}
             {error && <p role="alert" className="text-error font-bold">{error}</p>}

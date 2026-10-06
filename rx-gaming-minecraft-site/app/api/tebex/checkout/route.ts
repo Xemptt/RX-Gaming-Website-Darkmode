@@ -56,6 +56,10 @@ export async function POST(request: Request) {
 
     const username =
       typeof body.username === "string" ? body.username.trim() : "";
+    const voucherType = body.voucherType === "giftcard" || body.voucherType === "coupon"
+      ? body.voucherType
+      : "";
+    const voucherCode = typeof body.voucherCode === "string" ? body.voucherCode.trim() : "";
 
     if (!/^[a-zA-Z0-9_]{3,16}$/.test(username)) {
       return NextResponse.json(
@@ -63,6 +67,13 @@ export async function POST(request: Request) {
           error:
             "Enter a valid Java Minecraft username (3–16 letters, numbers or underscores).",
         },
+        { status: 400 },
+      );
+    }
+
+    if (voucherCode && (!voucherType || voucherCode.length > 128 || /[\u0000-\u001f\u007f]/.test(voucherCode))) {
+      return NextResponse.json(
+        { error: "Enter a valid gift card or discount code." },
         { status: 400 },
       );
     }
@@ -276,6 +287,78 @@ export async function POST(request: Request) {
             quantity: item.quantity,
           }),
         });
+      }
+    }
+
+    if (voucherCode) {
+      const coupons = Array.isArray(basket.coupons) ? basket.coupons : [];
+      const giftcards = Array.isArray(basket.giftcards) ? basket.giftcards : [];
+      const matchingCoupon = voucherType === "coupon" && coupons.some(
+        (coupon: { coupon_code?: string }) => coupon.coupon_code === voucherCode,
+      );
+      const matchingGiftcard = voucherType === "giftcard" && giftcards.some(
+        (giftcard: { card_number?: string }) => giftcard.card_number === voucherCode,
+      );
+
+      try {
+        if (voucherType === "coupon") {
+          if (!matchingCoupon) {
+            if (coupons.length) {
+              await api(accountPath(`/baskets/${ident}/coupons/remove`), { method: "POST" });
+            }
+            for (const giftcard of giftcards) {
+              await api(accountPath(`/baskets/${ident}/giftcards/remove`), {
+                method: "POST",
+                body: JSON.stringify({ card_number: giftcard.card_number }),
+              });
+            }
+            await api(accountPath(`/baskets/${ident}/coupons`), {
+              method: "POST",
+              body: JSON.stringify({ coupon_code: voucherCode }),
+            });
+          } else {
+            for (const giftcard of giftcards) {
+              await api(accountPath(`/baskets/${ident}/giftcards/remove`), {
+                method: "POST",
+                body: JSON.stringify({ card_number: giftcard.card_number }),
+              });
+            }
+          }
+        } else if (!matchingGiftcard) {
+          if (coupons.length) {
+            await api(accountPath(`/baskets/${ident}/coupons/remove`), { method: "POST" });
+          }
+          for (const giftcard of giftcards) {
+            await api(accountPath(`/baskets/${ident}/giftcards/remove`), {
+              method: "POST",
+              body: JSON.stringify({ card_number: giftcard.card_number }),
+            });
+          }
+          await api(accountPath(`/baskets/${ident}/giftcards`), {
+            method: "POST",
+            body: JSON.stringify({ card_number: voucherCode }),
+          });
+        } else {
+          if (coupons.length) {
+            await api(accountPath(`/baskets/${ident}/coupons/remove`), { method: "POST" });
+          }
+          for (const giftcard of giftcards) {
+            if (giftcard.card_number !== voucherCode) {
+              await api(accountPath(`/baskets/${ident}/giftcards/remove`), {
+                method: "POST",
+                body: JSON.stringify({ card_number: giftcard.card_number }),
+              });
+            }
+          }
+        }
+      } catch (error) {
+        if (error instanceof StoreUnavailableError && error.status && error.status < 500) {
+          return NextResponse.json(
+            { error: "That code could not be applied. Check the code and type, then try again." },
+            { status: 422 },
+          );
+        }
+        throw error;
       }
     }
 
