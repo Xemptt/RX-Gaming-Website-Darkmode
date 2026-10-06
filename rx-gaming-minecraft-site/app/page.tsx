@@ -34,17 +34,17 @@ export default function HomePage() {
         },
         {
             id: "practice",
-            name: "Practice",
+            name: "Coming soon!",
             banner: "/practice_bg.png",
             active: false,
-            summary: "A new game mode is in development.",
+            summary: "Practice mode is in development.",
         },
         {
             id: "skywars",
-            name: "SkyWars",
+            name: "Coming soon!",
             banner: "/skywars_bg.png",
             active: false,
-            summary: "A new game mode is in development.",
+            summary: "SkyWars is in development.",
         },
     ];
 
@@ -139,7 +139,7 @@ export default function HomePage() {
                                         <div className="flex items-center justify-between gap-3">
                                             <h3 className={`text-2xl sm:text-3xl font-black uppercase text-white [text-shadow:2px_2px_0px_#000] ${mode.active ? "group-hover:text-[#ffcc00]" : ""}`}>{mode.name}</h3>
                                             <span className={`shrink-0 border-2 px-2 py-1 text-[10px] font-bold uppercase ${mode.active ? "border-cyan-200 bg-cyan-950/80 text-cyan-100" : "border-white/50 bg-black/60 text-white/80"}`}>
-                                                {mode.active ? "Available" : "Coming soon"}
+                                                {mode.active ? "Available" : "In development"}
                                             </span>
                                         </div>
                                         <p className="mt-2 max-w-lg text-sm leading-relaxed text-white/90">{mode.summary}</p>
