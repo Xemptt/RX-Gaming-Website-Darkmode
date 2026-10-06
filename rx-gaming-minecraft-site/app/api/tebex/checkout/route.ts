@@ -180,7 +180,19 @@ export async function POST(request: Request) {
         );
       }
 
-      const authUrl = trustedTebexUrl(auth[0]?.url);
+      const rawAuthUrl = auth[0]?.url;
+      let authUrlHost = "invalid-url";
+      if (typeof rawAuthUrl === "string") {
+        try {
+          const parsedAuthUrl = new URL(rawAuthUrl);
+          authUrlHost = `${parsedAuthUrl.protocol}//${parsedAuthUrl.host}`;
+        } catch {
+          // Keep the diagnostic limited to the host; never log the full URL.
+        }
+      }
+      console.warn("[Tebex checkout] Authentication URL host:", authUrlHost);
+
+      const authUrl = trustedTebexUrl(rawAuthUrl);
 
       if (!authUrl) {
         throw new StoreUnavailableError(
