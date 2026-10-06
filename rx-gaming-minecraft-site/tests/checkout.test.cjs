@@ -1,12 +1,12 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const { loadTs } = require("./load-ts.cjs");
-function harness({ auth = false, failAtPackage, malicious = false } = {}) {
+function harness({ auth = false, failAtPackage, malicious = false, trustedIp = "203.0.113.10", voucherStatus } = {}) {
   const jar = new Map();
   const calls = [];
   let failed = false;
-  let basket = { ident: "basket-123", username: auth ? null : "Player_1", username_id: auth ? null : 10, complete: false, packages: [], links: { checkout: malicious ? "https://evil.test/pay" : "https://pay.tebex.io/basket-123" } };
-  class StoreUnavailableError extends Error {}
+  let basket = { ident: "basket-123", username: auth ? null : "Player_1", username_id: auth ? null : 10, complete: false, packages: [], coupons: [], giftcards: [], links: { checkout: malicious ? "https://evil.test/pay" : "https://pay.tebex.io/basket-123" } };
+  class StoreUnavailableError extends Error { constructor(message, status) { super(message); this.status=status; } }
   const service = {
     StoreUnavailableError,
     accountPath: path => "/accounts/test" + path,
@@ -24,13 +24,17 @@ function harness({ auth = false, failAtPackage, malicious = false } = {}) {
       }
       if (path.endsWith("/packages/remove")) { const id=JSON.parse(init.body).package_id; basket.packages=basket.packages.filter(p=>String(p.id)!==id); return {}; }
       if (/\/packages\/\d+$/.test(path) && init.method==="PUT") {basket.packages.find(p=>String(p.id)===path.split("/").pop()).in_basket.quantity=JSON.parse(init.body).quantity;return {};}
+      if (path.endsWith("/coupons/remove")) { basket.coupons=[]; return {}; }
+      if (path.endsWith("/coupons")) { if (voucherStatus) throw new StoreUnavailableError("Tebex rejected the code", voucherStatus); basket.coupons=[JSON.parse(init.body)]; return {data:structuredClone(basket)}; }
+      if (path.endsWith("/giftcards/remove")) { const code=JSON.parse(init.body).card_number; basket.giftcards=basket.giftcards.filter(card=>card.card_number!==code); return {}; }
+      if (path.endsWith("/giftcards")) { if (voucherStatus) throw new StoreUnavailableError("Tebex rejected the code", voucherStatus); basket.giftcards=[JSON.parse(init.body)]; return {data:structuredClone(basket)}; }
       return {data:structuredClone(basket)};
     }
   };
   const requestLib=loadTs("lib/request.ts");
   const {POST}=loadTs("app/api/tebex/checkout/route.ts",{
     "@/lib/tebex":service,
-    "@/lib/request":{...requestLib,clientIp:()=> "203.0.113.10"},
+    "@/lib/request":{...requestLib,clientIp:()=> trustedIp},
     "next/headers":{cookies:async()=>({get:name=>jar.has(name)?{value:jar.get(name)}:undefined,set:(name,value,options)=>{assert.equal(options.httpOnly,true);jar.set(name,value);},delete:name=>jar.delete(name)})}
   });
   const request=(body, origin="http://localhost:3000")=>new Request("http://localhost:3000/api/tebex/checkout",{method:"POST",headers:{"content-type":"application/json",origin},body:JSON.stringify({username:"Player_1",items:[{packageId:"123",quantity:2}],...body})});
@@ -73,5 +77,27 @@ test("checkout synchronizes removals and changed quantities after cancellation",
   h.basket.packages.push({id:124,in_basket:{quantity:1}});
   assert.equal((await h.POST(h.request({items:[{packageId:"123",quantity:3}]}))).status,200);
   assert.deepEqual(h.basket.packages,[{id:123,in_basket:{quantity:3}}]);
+});
+test("checkout applies a Tebex discount code to the basket",async()=>{
+  const h=harness();const response=await h.POST(h.request({voucherType:"coupon",voucherCode:"RX-G"}));
+  assert.equal(response.status,200);
+  assert.deepEqual(h.basket.coupons,[{coupon_code:"RX-G"}]);
+  assert.ok(h.calls.some(c=>c.path.endsWith("/coupons")&&JSON.parse(c.init.body).coupon_code==="RX-G"));
+});
+test("checkout applies a Tebex gift card to the basket",async()=>{
+  const h=harness();const response=await h.POST(h.request({voucherType:"giftcard",voucherCode:"0123 4567"}));
+  assert.equal(response.status,200);
+  assert.deepEqual(h.basket.giftcards,[{card_number:"0123 4567"}]);
+  assert.ok(h.calls.some(c=>c.path.endsWith("/giftcards")&&JSON.parse(c.init.body).card_number==="0123 4567"));
+});
+test("invalid Tebex voucher codes return a clear error",async()=>{
+  const h=harness({voucherStatus:422});const response=await h.POST(h.request({voucherType:"coupon",voucherCode:"NOT-VALID"}));
+  assert.equal(response.status,422);
+  assert.match((await response.json()).error,/could not be applied/i);
+});
+test("checkout refuses to create a basket without a trusted customer IP",async()=>{
+  const h=harness({trustedIp:null});const response=await h.POST(h.request());
+  assert.equal(response.status,503);
+  assert.equal(h.calls.some(c=>c.path.endsWith("/baskets")&&c.init.method==="POST"),false);
 });
 

@@ -11,6 +11,7 @@ import {
   readJsonBody,
   RequestBodyError,
   checkoutOrigin,
+  clientIp,
 } from "@/lib/request";
 
 export const dynamic = "force-dynamic";
@@ -68,6 +69,15 @@ export async function POST(request: Request) {
             "Enter a valid Java Minecraft username (3–16 letters, numbers or underscores).",
         },
         { status: 400 },
+      );
+    }
+
+    const customerIp = clientIp(request);
+
+    if (!customerIp) {
+      return NextResponse.json(
+        { error: "Integrated checkout needs a trusted customer IP. Please use the official Tebex store instead." },
+        { status: 503 },
       );
     }
 
@@ -154,6 +164,7 @@ export async function POST(request: Request) {
           method: "POST",
           body: JSON.stringify({
             username,
+            ip_address: customerIp,
             complete_url: `${origin}/store/success`,
             cancel_url: `${origin}/cart`,
             complete_auto_redirect: true,
