@@ -22,6 +22,10 @@ export default function StandaloneInsanecraftProfile() {
 
     // List of blacklisted realm items parsed from server configurations
     const bannedItemsList = [
+        "lostinfinity_vampyreon_boots",
+        "lostinfinity_vampyreon_leggings",
+        "lostinfinity_vampyreon_chestplate",
+        "lostinfinity_vampyreon_helmet",
         "lostinfinity_vampyreon_prime_boots",
         "lostinfinity_vampyreon_prime_leggings",
         "lostinfinity_vampyreon_prime_chestplate",
