@@ -43,62 +43,60 @@ const rankArtwork: Array<{ name: RegExp; slug: string }> = [
   { name: /\bdragonborn\b/i, slug: "dragonborn" },
 ];
 const insanecraftRankRewards: Record<string, string> = {
-  extreme: `<h4>Extreme — Starter Rank</h4>
-    <p>Includes the existing Member/default perks, plus:</p>
+  extreme: `<h4>Extreme Rank — Starter Tier</h4>
+    <p>InsaneCraft starter donor rank. Includes:</p>
     <ul>
       <li>5 homes total</li>
       <li>2 PlayerVaultsX vaults total</li>
-      <li>/kit extreme</li>
-      <li>Essentials /hat and /workbench</li>
-      <li>Extreme in-game prefix</li>
-      <li>1 Insane Crate Key with this purchase</li>
-      <li>Private beta and whitelist access arranged by staff where available</li>
+      <li>Essentials commands: /hat and /workbench</li>
+      <li>UltraCosmetics: Piggy pet and Iron Hat</li>
+      <li>Extreme chat prefix</li>
     </ul>
-    <p>Every higher Insanecraft rank includes these permissions and the Extreme kit.</p>`,
-  mental: `<h4>Mental — Includes Everything from Extreme</h4>
+    <p>Higher InsaneCraft ranks inherit Extreme permissions and cosmetics.</p>`,
+  mental: `<h4>Mental Rank</h4>
+    <p>Includes everything from Extreme, plus:</p>
     <ul>
-      <li>All Extreme permissions and kit remain included</li>
       <li>6 homes total</li>
-      <li>/kit mental and Essentials /enderchest</li>
       <li>3 PlayerVaultsX vaults total</li>
-      <li>2 Insane Crate Keys with this purchase</li>
-      <li>Mental in-game prefix</li>
+      <li>Essentials command: /enderchest</li>
+      <li>UltraCosmetics: Dog pet and Diamond Hat</li>
+      <li>Mental chat prefix</li>
     </ul>`,
-  loony: `<h4>Loony — Includes Everything from Mental</h4>
+  loony: `<h4>Loony Rank</h4>
+    <p>Includes everything from Mental, plus:</p>
     <ul>
-      <li>All Extreme and Mental permissions and kits remain included</li>
       <li>7 homes total</li>
-      <li>/kit loony and Essentials /nick</li>
       <li>4 PlayerVaultsX vaults total</li>
-      <li>4 Insane Crate Keys with this purchase</li>
-      <li>Loony in-game prefix</li>
+      <li>Essentials command: /nick</li>
+      <li>UltraCosmetics: Glacial Steed mount and Happy emote</li>
+      <li>Loony chat prefix</li>
     </ul>`,
-  nutty: `<h4>Nutty — Includes Everything from Loony</h4>
+  nutty: `<h4>Nutty Rank</h4>
+    <p>Includes everything from Loony, plus:</p>
     <ul>
-      <li>All Extreme, Mental and Loony permissions and kits remain included</li>
       <li>8 homes total</li>
-      <li>/kit nutty, Essentials /repair and /feed</li>
       <li>5 PlayerVaultsX vaults total</li>
-      <li>6 Insane Crate Keys with this purchase</li>
-      <li>Nutty in-game prefix</li>
+      <li>Essentials commands: /repair and /feed</li>
+      <li>UltraCosmetics: Creeper morph and Ender Aura particle effect</li>
+      <li>Nutty chat prefix</li>
     </ul>`,
-  crazy: `<h4>Crazy — Includes Everything from Nutty</h4>
+  crazy: `<h4>Crazy Rank</h4>
+    <p>Includes everything from Nutty, plus:</p>
     <ul>
-      <li>All Extreme, Mental, Loony and Nutty permissions and kits remain included</li>
       <li>11 homes total</li>
-      <li>/kit crazy and Essentials /heal</li>
       <li>6 PlayerVaultsX vaults total</li>
-      <li>8 Insane Crate Keys with this purchase</li>
-      <li>Crazy in-game prefix</li>
+      <li>Essentials command: /heal</li>
+      <li>UltraCosmetics: Firework gadget and Rainbow projectile effect</li>
+      <li>Crazy chat prefix</li>
     </ul>`,
-  insane: `<h4>Insane — Includes Everything from Crazy</h4>
+  insane: `<h4>Insane Rank</h4>
+    <p>Includes everything from Crazy, plus:</p>
     <ul>
-      <li>All Extreme, Mental, Loony, Nutty and Crazy permissions and kits remain included</li>
       <li>13 homes total</li>
-      <li>/kit insane and Essentials /fly</li>
       <li>7 PlayerVaultsX vaults total</li>
-      <li>10 Insane Crate Keys with this purchase</li>
-      <li>Insane in-game prefix</li>
+      <li>Essentials command: /fly</li>
+      <li>UltraCosmetics: Dragon mount and Warden pet</li>
+      <li>Insane chat prefix</li>
     </ul>`,
 };
 function getInsanecraftRankRewards(name: string): string | undefined {
