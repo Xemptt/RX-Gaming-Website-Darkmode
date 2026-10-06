@@ -43,8 +43,9 @@ const rankArtwork: Array<{ name: RegExp; slug: string }> = [
 ];
 function getRankArtwork(name: string, category: ProductCategory, mode: ProductMode): string | undefined {
   const realm = mode === "anarchy" ? "insanecraft" : mode === "survival" ? "rlcraft" : undefined;
-  const rank = rankArtwork.find(entry => entry.name.test(name));
-  const knownRankTitle = /^(?:(?:insanecraft|rlcraft|rank|vip)[\s:_-]+)?(?:extreme|mental|loony|nutty|crazy|insane|adventurer|champion|warlord)(?:[\s:_-]+(?:rank|vip|package|pack|upgrade)){0,2}$/i.test(name.trim());
+  const title = name.replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+  const rank = rankArtwork.find(entry => entry.name.test(title));
+  const knownRankTitle = /^(?:(?:insanecraft|rlcraft|rank|vip)\s+)?(?:extreme|mental|loony|nutty|crazy|insane|adventurer|champion|warlord)(?:\s+(?:rank|vip|package|pack|upgrade)){0,2}$/i.test(title);
   if (category !== "ranks" && !knownRankTitle) return undefined;
   return realm && rank ? `/ranks/${realm}/rank-${rank.slug}.webp` : undefined;
 }
