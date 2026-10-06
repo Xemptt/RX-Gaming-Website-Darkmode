@@ -22,7 +22,10 @@ export default function StandaloneInsanecraftProfile() {
 
     // List of blacklisted realm items parsed from server configurations
     const bannedItemsList = [
-        "Sword Of The cosmos",
+        "lostinfinity_vampyreon_prime_boots",
+        "lostinfinity_vampyreon_prime_leggings",
+        "lostinfinity_vampyreon_prime_chestplate",
+        "lostinfinity_vampyreon_prime_helmet",
         "avaritia_infinity_pickaxe",
         "adminweapons_air_admin_sword",
         "adminweapons_fire_admin_sword",
