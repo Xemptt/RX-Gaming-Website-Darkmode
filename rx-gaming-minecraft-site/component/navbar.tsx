@@ -31,7 +31,7 @@ export default function Navbar() {
   return <div className="relative z-50 w-full">
 <div className="bg-[#1E1B4B] flex items-center gap-2 py-2 px-4 overflow-hidden"> 
   <p 
-    className="text-xs text-center leading-relaxed font-bold tracking-wide w-full text-[#FF3333] animate-pulse"
+    className="text-sm text-center leading-relaxed font-bold tracking-wide w-full text-[#FF3333] animate-pulse"
     style={{ textShadow: '0 0 8px rgba(255, 51, 51, 0.8), 0 0 20px rgba(255, 51, 51, 0.5)' }}
   >
     {settings.marqueeText}
