@@ -128,12 +128,21 @@ export async function POST(request: Request) {
       ) {
         basket = undefined;
       }
+
+      // Older baskets created without an identifier cannot be updated to
+      // include one. Start a fresh basket so Tebex receives this checkout's
+      // Minecraft username during creation.
+      if (basket && !basket.username && !basket.username_id) {
+        basket = undefined;
+        jar.delete("rx-basket");
+      }
     }
     if (!basket) {
       basket = (
         await api(accountPath("/baskets"), {
           method: "POST",
           body: JSON.stringify({
+            username,
             complete_url: `${origin}/store/success`,
             cancel_url: `${origin}/cart`,
             complete_auto_redirect: true,
