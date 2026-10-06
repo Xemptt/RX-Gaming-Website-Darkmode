@@ -24,6 +24,11 @@ function formatPackageDescription(description: string) {
     .trim();
 }
 
+function isRankProduct(product: Product) {
+  const title = product.name.replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+  return product.category === "ranks" || /^(?:(?:insanecraft|rlcraft|rank|vip)\s+)?(?:extreme|mental|loony|nutty|crazy|insane|adventurer|champion|warlord|dragonborn)(?:\s+(?:rank|vip|package|pack|upgrade)){0,2}$/i.test(title);
+}
+
 export default function Catalog({ realm }: { realm: string }) {
   const [products, setProducts] = useState<Product[] | null>(null);
   const [error, setError] = useState("");
@@ -47,7 +52,12 @@ export default function Catalog({ realm }: { realm: string }) {
       products === null ? <p role="status" className="panel">Loading available products…</p> :
       products.length === 0 ? <div className="panel space-y-4"><h2 className="text-xl font-bold">No packages available yet</h2><p>Check the official store or come back soon.</p><a href={settings.tebexMainStore} className="action-button">Open official store</a></div> :
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">{products.map(product => <article className="panel flex flex-col gap-4" key={product.id}>
-        <img src={product.img} alt="" className="w-full h-40 object-contain" loading="lazy" onError={event => { if (!event.currentTarget.src.endsWith("/1.png")) event.currentTarget.src = "/1.png"; }} />
+        <div className="relative h-40 overflow-hidden bg-black/20">
+          <img src={product.img} alt="" className="w-full h-full object-contain" loading="lazy" onError={event => { if (!event.currentTarget.src.endsWith("/1.png")) event.currentTarget.src = "/1.png"; }} />
+          {isRankProduct(product) && <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/75 to-transparent px-2 pb-2 pt-8 text-center text-sm sm:text-base uppercase tracking-wide text-white [text-shadow:2px_2px_0px_#000]">
+            {product.name}
+          </span>}
+        </div>
         <h2 className="text-xl font-bold break-words">{product.name}</h2>
         <p className="text-2xl text-accent font-bold">{product.price.toFixed(2)} {product.currency}</p>
         {product.description && formatPackageDescription(product.description) && <div className="border-t border-frame/60 pt-3">

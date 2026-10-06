@@ -46,10 +46,10 @@ test("realm categories override ambiguous package names and live currency is ret
     process.env.TEBEX_PUBLIC_TOKEN="test-only-token";
     global.fetch=async url=>{
       assert.match(url,/^https:\/\/headless.tebex.io\/api\/accounts\/test-only-token\/categories\?includePackages=1$/);
-      return Response.json({data:[{name:"Insane ranks",parent:{name:"RLCraft"},packages:[{id:1,name:"Insane Rank",total_price:5,currency:"GBP"}]},{name:"Packages",parent:{name:"Insanecraft"},packages:[{id:2,name:"Survival Bundle",total_price:8,currency:"GBP"}]}]});
+      return Response.json({data:[{name:"Insane ranks",parent:{name:"RLCraft"},packages:[{id:1,name:"Insane Rank",total_price:5,currency:"GBP"}]},{name:"Packages",parent:{name:"Insanecraft"},packages:[{id:2,name:"Survival Bundle",total_price:8,currency:"GBP"}]},{name:"Other",parent:{name:"RLCraft"},packages:[{id:3,name:"🐉 Dragonborn",total_price:12,currency:"GBP"}]}]});
     };
     const {fetchTebexProducts}=loadTs("lib/tebex.ts");
-    const rl=await fetchTebexProducts("rlcraft");assert.deepEqual(rl.map(p=>p.id),["1"]);assert.equal(rl[0].currency,"GBP");
+    const rl=await fetchTebexProducts("rlcraft");assert.deepEqual(rl.map(p=>p.id),["1","3"]);assert.equal(rl[0].currency,"GBP");assert.equal(rl[1].img,"/ranks/rlcraft/rank-dragonborn.webp");
     assert.deepEqual((await fetchTebexProducts("insanecraft")).map(p=>p.id),["2"]);
     global.fetch=async()=>new Response("{}",{status:503});
     await assert.rejects(fetchTebexProducts("rlcraft"));

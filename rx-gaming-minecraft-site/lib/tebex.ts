@@ -40,13 +40,15 @@ const rankArtwork: Array<{ name: RegExp; slug: string }> = [
   { name: /\b(?:nutty|warlord)\b/i, slug: "nutty" },
   { name: /\bcrazy\b/i, slug: "crazy" },
   { name: /\binsane\b/i, slug: "insane" },
+  { name: /\bdragonborn\b/i, slug: "dragonborn" },
 ];
 function getRankArtwork(name: string, category: ProductCategory, mode: ProductMode): string | undefined {
   const realm = mode === "anarchy" ? "insanecraft" : mode === "survival" ? "rlcraft" : undefined;
   const title = name.replace(/[^\p{L}\p{N}]+/gu, " ").trim();
   const rank = rankArtwork.find(entry => entry.name.test(title));
-  const knownRankTitle = /^(?:(?:insanecraft|rlcraft|rank|vip)\s+)?(?:extreme|mental|loony|nutty|crazy|insane|adventurer|champion|warlord)(?:\s+(?:rank|vip|package|pack|upgrade)){0,2}$/i.test(title);
+  const knownRankTitle = /^(?:(?:insanecraft|rlcraft|rank|vip)\s+)?(?:extreme|mental|loony|nutty|crazy|insane|adventurer|champion|warlord|dragonborn)(?:\s+(?:rank|vip|package|pack|upgrade)){0,2}$/i.test(title);
   if (category !== "ranks" && !knownRankTitle) return undefined;
+  if (rank?.slug === "dragonborn" && mode !== "survival") return undefined;
   return realm && rank ? `/ranks/${realm}/rank-${rank.slug}.webp` : undefined;
 }
 export async function fetchCatalog(signal?: AbortSignal): Promise<Product[]> {
