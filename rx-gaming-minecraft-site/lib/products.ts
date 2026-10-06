@@ -15,6 +15,7 @@ export type Product = {
     currency?: string;
     disableQuantity?: boolean;
     recurring?: boolean;
+    description?: string;
     originalPrice?: number;
     isPromo: boolean;
     color: string;

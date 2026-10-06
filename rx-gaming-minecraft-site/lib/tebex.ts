@@ -24,7 +24,7 @@ export async function tebexRequest(path: string, init: RequestInit = {}) {
 export function getServerModeLabel(mode: string) { return getRealm(mode)?.name || "Network"; }
 type Category = {
   name: string; slug?: string; parent?: { name?: string; slug?: string } | null;
-  packages?: Array<{ id: number; name: string; total_price: number; currency: string; image?: string | null; disable_quantity?: boolean; type?: string }>;
+  packages?: Array<{ id: number; name: string; description?: string | null; total_price: number; currency: string; image?: string | null; disable_quantity?: boolean; type?: string }>;
 };
 function detectMode(text: string): ProductMode {
   if (/insanecraft|\binsane\b|\banarchy\b/i.test(text)) return "anarchy";
@@ -54,7 +54,8 @@ export async function fetchCatalog(signal?: AbortSignal): Promise<Product[]> {
         continue;
       }
       result.set(id, {
-        id, name: pkg.name, price: pkg.total_price, currency: pkg.currency,
+        id, name: pkg.name, description: typeof pkg.description === "string" ? pkg.description : undefined,
+        price: pkg.total_price, currency: pkg.currency,
         disableQuantity: pkg.disable_quantity === true, recurring: pkg.type === "subscription",
         isPromo: false, category: kind, mode: productMode, color: "#7C3AED",
         img: typeof pkg.image === "string" && /^https:\/\//.test(pkg.image) ? pkg.image : "/1.png",
