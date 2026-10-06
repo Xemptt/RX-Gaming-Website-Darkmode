@@ -129,7 +129,7 @@ export async function POST(request: Request) {
         basket = undefined;
       }
     }
-        if (!basket) {
+    if (!basket) {
       basket = (
         await api(accountPath("/baskets"), {
           method: "POST",
@@ -180,34 +180,35 @@ export async function POST(request: Request) {
         );
       }
 
-      const rawAuthUrl = auth[0]?.url;
-      let authUrlHost = "invalid-url";
-      let authUrlParseable = false;
-      if (typeof rawAuthUrl === "string") {
-        try {
-          const parsedAuthUrl = new URL(rawAuthUrl);
-          authUrlHost = `${parsedAuthUrl.protocol}//${parsedAuthUrl.host}`;
-          authUrlParseable = true;
-        } catch {
-          // Keep the diagnostic limited to the host; never log the full URL.
-        }
-      }
-      const firstAuthOption = auth[0];
-      console.warn("[Tebex checkout] Authentication response shape:", {
-        firstOptionType: firstAuthOption === null ? "null" : typeof firstAuthOption,
-        firstOptionKeys:
-          firstAuthOption && typeof firstAuthOption === "object"
-            ? Object.keys(firstAuthOption)
-            : [],
-        nameType: typeof firstAuthOption?.name,
-        urlType: typeof rawAuthUrl,
-        urlParseable: authUrlParseable,
-        urlHost: authUrlHost,
-      });
-
-      const authUrl = trustedTebexUrl(rawAuthUrl);
+      // Tebex may return more than one authentication option, and the `url`
+      // field is optional. Use the first option that contains a trusted URL
+      // instead of assuming the first entry is usable.
+      const authUrl = auth
+        .map((option: unknown) => {
+          if (!option || typeof option !== "object" || !("url" in option)) {
+            return null;
+          }
+          return trustedTebexUrl(option.url);
+        })
+        .find((url): url is string => url !== null);
 
       if (!authUrl) {
+        // Log response shape only. Authentication URLs can contain session
+        // data, so never include their values or paths in server logs.
+        console.warn("[Tebex checkout] No valid authentication URL returned:", {
+          optionCount: auth.length,
+          options: auth.slice(0, 5).map((option: unknown) => ({
+            type: option === null ? "null" : typeof option,
+            keys:
+              option && typeof option === "object"
+                ? Object.keys(option)
+                : [],
+            urlType:
+              option && typeof option === "object" && "url" in option
+                ? typeof option.url
+                : "missing",
+          })),
+        });
         throw new StoreUnavailableError(
           "Unable to open account verification. Please use the official store.",
         );
