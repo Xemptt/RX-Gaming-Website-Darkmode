@@ -30,7 +30,7 @@ export default function Navbar() {
   const toggleTheme = () => setTheme(dark ? "light" : "dark");
   return <div className="relative z-50 w-full">
 <div className="bg-[#1E1B4B] flex items-center gap-2 py-2 px-4 overflow-hidden"> 
-  <p className="text-xs text-center leading-relaxed font-bold tracking-wide w-full text-red-500">
+  <p className="text-xs text-center leading-relaxed font-bold tracking-wide w-full text-red-300">
     {settings.marqueeText}
   </p> 
 </div>
