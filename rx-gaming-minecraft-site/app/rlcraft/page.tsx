@@ -206,6 +206,12 @@ export default function StandaloneRLCraftProfile() {
                         >
                             Back to Home
                         </a>
+                        <a
+                            href="/server-details"
+                            className="border-4 border-frame bg-surface text-foreground p-4 font-black text-sm uppercase tracking-wider block text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-none"
+                        >
+                            All server details
+                        </a>
                     </div>
 
                 </div>

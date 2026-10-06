@@ -15,7 +15,10 @@ export default function ServerDetailsPage() {
   };
   return <div className="min-h-screen flex flex-col bg-page text-foreground"><Navbar />
     <main id="main-content" className="max-w-7xl mx-auto w-full px-4 py-8 space-y-8 flex-1">
-      <h1 className="text-3xl md:text-5xl font-black uppercase">Server realms</h1>
+      <div className="space-y-3">
+        <h1 className="text-3xl md:text-5xl font-black uppercase">Server details</h1>
+        <p className="max-w-3xl text-muted">Choose a realm to view its modpack information, server address and store packages.</p>
+      </div>
       <p className="text-xs text-muted">Server status may be cached for up to five minutes.</p>
       <p role="status" className="font-bold min-h-6">{message}</p>
       <div className="grid lg:grid-cols-2 gap-6">{realms.map(realm => <section key={realm.id} className="panel space-y-6">
@@ -23,7 +26,7 @@ export default function ServerDetailsPage() {
         <ServerCounter serverId={realm.id} serverName={realm.name} />
         <p className="font-bold select-all break-all">{realm.host}:{realm.port}</p>
         <button className="action-button" onClick={() => void copy(`${realm.host}:${realm.port}`)}>Copy {realm.name} IP</button>
-        <p><a className="underline" href={`/${realm.id}`}>View modpack and realm details →</a></p>
+        <a className="action-button block" href={`/${realm.id}`}>Explore {realm.name} profile →</a>
       </section>)}</div>
     </main><Footer /></div>;
 }
