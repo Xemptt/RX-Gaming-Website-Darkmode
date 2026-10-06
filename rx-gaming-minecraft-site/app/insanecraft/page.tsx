@@ -191,7 +191,7 @@ export default function StandaloneInsanecraftProfile() {
 
                         {/* Modpack Client Download Anchor Button Slot */}
                         <a 
-                            href="https://curseforge.com" 
+                            href="https://www.curseforge.com/minecraft/modpacks/insanecraft-modpack" 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="border-4 border-frame bg-[#FF8000] text-black p-5 font-black text-lg uppercase tracking-wider block text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-none"

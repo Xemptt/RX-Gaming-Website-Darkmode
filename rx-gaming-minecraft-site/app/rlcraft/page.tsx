@@ -7,6 +7,7 @@ import { useState } from "react";
 export default function StandaloneRLCraftProfile() {
     // State to toggle the custom interactive mods dropdown menu block
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isBannedDropdownOpen, setIsBannedDropdownOpen] = useState(false);
 
     // Curated list of prominent core mods featured within the RLCraft modpack layout
     const modpackList = [
@@ -17,6 +18,61 @@ export default function StandaloneRLCraftProfile() {
         "Better Survival (Additional Weapons & Enchantments)",
         "First Aid (Localized Body Part Damage System)",
         "Waystones (Teleportation Network Systems)"
+    ];
+
+    const bannedItemsList = [
+        "lostinfinity_vampyreon_prime_boots",
+        "lostinfinity_vampyreon_prime_leggings",
+        "lostinfinity_vampyreon_prime_chestplate",
+        "lostinfinity_vampyreon_prime_helmet",
+        "avaritia_infinity_pickaxe",
+        "adminweapons_air_admin_sword",
+        "adminweapons_fire_admin_sword",
+        "adminweapons_water_admin_sword",
+        "adminweapons_admin_gun",
+        "adminweapons_lightningstaff",
+        "adminweapons_poisonous_dynamite",
+        "adminweapons_fire_dynamite",
+        "adminweapons_heal_dynamite",
+        "adminweapons_nuclear_dynamite",
+        "adminweapons_attractive_dynamite",
+        "adminweapons_repulsive_dynamite",
+        "adminweapons_highjump_dynamite",
+        "adminweapons_glass_launcher",
+        "adminweapons_glass_bomb",
+        "adminweapons_kickstaff",
+        "adminweapons_ban_hammer",
+        "adminweapons_admin_rocket_launcher",
+        "adminweapons_teleport_admin_sword",
+        "adminweapons_extinguisher",
+        "draconicevolution_reactor_core",
+        "avaritia_infinity_shovel",
+        "draconicevolution_celestial_manipulator",
+        "chickenchunks_chunk_loader",
+        "extrautils2_bagofholding",
+        "chancecubes_chance_icosahedron",
+        "chancecubes_compact_giant_chance_cube",
+        "chancecubes_chance_cube",
+        "draconicevolution_reactor_component",
+        "draconicevolution_flow_gate",
+        "draconicevolution_reactor_part",
+        "icbmclassic_explosives",
+        "cyclicmagic_battery_infinite",
+        "draconicadditions_chaos_stabilizer_core",
+        "weather2_weather_machine",
+        "weather2_anemometer",
+        "weather2_weather_deflector",
+        "weather2_weather_forecast",
+        "weather2_wind_vane",
+        "weather2_tornado_siren_manual",
+        "weather2_tornado_siren",
+        "weather2_tornado_sensor",
+        "weather2_weather_item",
+        "mahoutsukai_mystic_staff",
+        "twilightforest_uncrafting_table",
+        "barrier",
+        "inventorypets_chest_pet",
+        "inventorypets_double_chest_pet"
     ];
 
     return (
@@ -84,6 +140,39 @@ export default function StandaloneRLCraftProfile() {
                             </div>
                         </div>
                     </div>
+
+                        {/* Dropdown Component: Banned Items List */}
+                        <div className="border-4 border-frame bg-surface shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-left overflow-hidden">
+                            <button
+                                onClick={() => setIsBannedDropdownOpen(!isBannedDropdownOpen)}
+                                aria-expanded={isBannedDropdownOpen}
+                                aria-controls="banned-items-list"
+                                type="button"
+                                className="w-full p-6 flex items-center justify-between font-black text-xl uppercase bg-surface border-b-4 border-frame transition-all hover:bg-surface-hover active:bg-surface-muted cursor-pointer"
+                            >
+                                <span>Banned Items List</span>
+                                <svg
+                                    className={`w-6 h-6 transform transition-transform duration-200 ${isBannedDropdownOpen ? 'rotate-180' : 'rotate-0'}`}
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="3"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path strokeLinecap="square" strokeLinejoin="miter" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+
+                            <div id="banned-items-list" hidden={!isBannedDropdownOpen}>
+                                <div className="p-6 bg-surface-muted max-h-80 overflow-y-auto space-y-3 font-bold text-xs uppercase text-muted custom-scrollbar">
+                                    {bannedItemsList.map((item, index) => (
+                                        <div key={item} className="flex items-center gap-2 py-1 border-b border-dashed border-line last:border-0">
+                                            <span className="text-red-500 font-black text-sm">?</span>
+                                            <span className="text-foreground tracking-wide">{item}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
 
                     {/* Right Column Quick-Action Navigation Hub Panels */}
                     <div className="space-y-6">
