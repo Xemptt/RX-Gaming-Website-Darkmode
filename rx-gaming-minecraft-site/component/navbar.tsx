@@ -7,7 +7,7 @@ import { useTheme } from "next-themes";
 import { useCustomCursor } from "@/component/appearance-provider";
 import { useCartStore } from "@/store/cart";
 import settings from "@/store-settings.json";
-const links = [["/voucher", "Voucher"], ["/store/main", "Store"], ["/careers", "Careers"], ["/changelog", "Changelog"], ["/documents", "Documents"], ["/server-details", "Details"]];
+const links = [["/", "Home"], ["/voucher", "Voucher"], ["/store/main", "Store"], ["/careers", "Careers"], ["/changelog", "Changelog"], ["/documents", "Documents"], ["/server-details", "Details"]];
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const { enabled: cursor, toggle: toggleCursor } = useCustomCursor();
