@@ -113,7 +113,8 @@ export default function StandaloneRLCraftProfile() {
                                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                                 aria-expanded={isDropdownOpen}
                                 aria-controls="modpack-list"
-                                className="w-full p-6 flex items-center justify-between font-black text-xl uppercase bg-surface border-b-4 border-frame transition-all hover:bg-surface-hover active:bg-surface-muted"
+                                type="button"
+                                className="w-full p-6 flex items-center justify-between font-black text-xl uppercase bg-surface border-b-4 border-frame transition-all hover:bg-surface-hover active:bg-surface-muted cursor-pointer"
                             >
                                 <span>Featured Mods List</span>
                                 <svg 
@@ -139,7 +140,6 @@ export default function StandaloneRLCraftProfile() {
                                 </div>
                             </div>
                         </div>
-                    </div>
 
                         {/* Dropdown Component: Banned Items List */}
                         <div className="border-4 border-frame bg-surface shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-left overflow-hidden">
@@ -173,6 +173,7 @@ export default function StandaloneRLCraftProfile() {
                                 </div>
                             </div>
                         </div>
+                    </div>
 
                     {/* Right Column Quick-Action Navigation Hub Panels */}
                     <div className="space-y-6">
@@ -209,7 +210,11 @@ export default function StandaloneRLCraftProfile() {
 
                 </div>
 
-                <section className="panel space-y-4"><h2 className="text-2xl font-bold">RLCraft packages</h2><p>See current packages, prices and availability in the store.</p><a href="/store/rlcraft" className="action-button">Browse RLCraft store</a></section>
+                <section className="panel space-y-4">
+                    <h2 className="text-2xl font-bold">RLCraft packages</h2>
+                    <p>See current packages, prices and availability in the store.</p>
+                    <a href="/store/rlcraft" className="action-button">Browse RLCraft store</a>
+                </section>
 
             </main>
 
