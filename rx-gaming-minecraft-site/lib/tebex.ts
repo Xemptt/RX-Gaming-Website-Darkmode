@@ -44,8 +44,10 @@ const rankArtwork: Array<{ name: RegExp; slug: string }> = [
 ];
 const insanecraftRankRewards: Record<string, string> = {
   extreme: `<h4>Extreme — Starter Rank</h4>
+    <p>Includes the existing Member/default perks, plus:</p>
     <ul>
       <li>5 homes total</li>
+      <li>2 PlayerVaultsX vaults total</li>
       <li>/kit extreme</li>
       <li>Essentials /hat and /workbench</li>
       <li>Extreme in-game prefix</li>
@@ -58,7 +60,7 @@ const insanecraftRankRewards: Record<string, string> = {
       <li>All Extreme permissions and kit remain included</li>
       <li>6 homes total</li>
       <li>/kit mental and Essentials /enderchest</li>
-      <li>1 PlayerVaultsX vault total</li>
+      <li>3 PlayerVaultsX vaults total</li>
       <li>2 Insane Crate Keys with this purchase</li>
       <li>Mental in-game prefix</li>
     </ul>`,
@@ -67,7 +69,7 @@ const insanecraftRankRewards: Record<string, string> = {
       <li>All Extreme and Mental permissions and kits remain included</li>
       <li>7 homes total</li>
       <li>/kit loony and Essentials /nick</li>
-      <li>2 PlayerVaultsX vaults total</li>
+      <li>4 PlayerVaultsX vaults total</li>
       <li>4 Insane Crate Keys with this purchase</li>
       <li>Loony in-game prefix</li>
     </ul>`,
@@ -76,7 +78,7 @@ const insanecraftRankRewards: Record<string, string> = {
       <li>All Extreme, Mental and Loony permissions and kits remain included</li>
       <li>8 homes total</li>
       <li>/kit nutty, Essentials /repair and /feed</li>
-      <li>3 PlayerVaultsX vaults total</li>
+      <li>5 PlayerVaultsX vaults total</li>
       <li>6 Insane Crate Keys with this purchase</li>
       <li>Nutty in-game prefix</li>
     </ul>`,
@@ -85,7 +87,7 @@ const insanecraftRankRewards: Record<string, string> = {
       <li>All Extreme, Mental, Loony and Nutty permissions and kits remain included</li>
       <li>11 homes total</li>
       <li>/kit crazy and Essentials /heal</li>
-      <li>4 PlayerVaultsX vaults total</li>
+      <li>6 PlayerVaultsX vaults total</li>
       <li>8 Insane Crate Keys with this purchase</li>
       <li>Crazy in-game prefix</li>
     </ul>`,
@@ -94,7 +96,7 @@ const insanecraftRankRewards: Record<string, string> = {
       <li>All Extreme, Mental, Loony, Nutty and Crazy permissions and kits remain included</li>
       <li>13 homes total</li>
       <li>/kit insane and Essentials /fly</li>
-      <li>5 PlayerVaultsX vaults total</li>
+      <li>7 PlayerVaultsX vaults total</li>
       <li>10 Insane Crate Keys with this purchase</li>
       <li>Insane in-game prefix</li>
     </ul>`,
