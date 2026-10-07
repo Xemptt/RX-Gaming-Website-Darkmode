@@ -1,25 +1,30 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const { loadTs } = require("./load-ts.cjs");
-function harness({ auth = false, authOptions = [{name:"Minecraft",url:"https://ident.tebex.io/verify"}], failAtPackage, malicious = false, voucherStatus } = {}) {
+function harness({ auth = false, authOptions = [{name:"Minecraft",url:"https://ident.tebex.io/verify"}], failAtPackage, malicious = false, voucherStatus, trustedIp = "203.0.113.10", configured = true } = {}) {
   const jar = new Map();
   const calls = [];
   let failed = false;
   let created = 0;
-  let basket = { ident: "basket-123", username: null, username_id: null, complete: false, packages: [], coupons: [], giftcards: [], links: {} };
+  let basket = { ident: "basket-123", username: null, username_id: null, ip: trustedIp, complete: false, packages: [], coupons: [], giftcards: [], links: {} };
   class StoreUnavailableError extends Error { constructor(message, status) { super(message); this.status=status; } }
   const service = {
     StoreUnavailableError,
+    tebexAuthorization: () => {
+      if (!configured) throw new StoreUnavailableError("Secure checkout is temporarily unavailable. Please use the official store.");
+      return "Basic test-credentials";
+    },
     accountPath: path => "/accounts/test" + path,
     fetchCatalog: async () => [{id:"123",currency:"GBP",price:5},{id:"124",currency:"GBP",price:8},{id:"125",currency:"GBP",price:10,disableQuantity:true}],
     tebexRequest: async (path, init={}) => {
       calls.push({path,init});
       assert.ok(init.signal instanceof AbortSignal, "all upstream requests receive cancellation");
+      assert.equal(new Headers(init.headers).get("Authorization"),"Basic test-credentials", "basket requests must be authenticated");
       if (path.endsWith("/baskets") && init.method === "POST") {
         const payload=JSON.parse(init.body);
-        if (Object.hasOwn(payload,"ip_address")) throw new StoreUnavailableError("Tebex rejected ip_address",422);
+        assert.equal(payload.ip_address,trustedIp);
         const ident=++created === 1 ? "basket-123" : `basket-123-${created}`;
-        basket={ident,username:auth ? null : payload.username,username_id:auth ? null : 10,complete:false,packages:[],coupons:[],giftcards:[],links:{}};
+        basket={ident,username:auth ? null : payload.username,username_id:auth ? null : 10,ip:payload.ip_address,complete:false,packages:[],coupons:[],giftcards:[],links:{}};
         return {data:structuredClone(basket)};
       }
       if (path.includes("/auth?")) return authOptions;
@@ -42,19 +47,19 @@ function harness({ auth = false, authOptions = [{name:"Minecraft",url:"https://i
   const requestLib=loadTs("lib/request.ts");
   const {POST}=loadTs("app/api/tebex/checkout/route.ts",{
     "@/lib/tebex":service,
-    "@/lib/request":requestLib,
+    "@/lib/request":{...requestLib,clientIp:()=>trustedIp},
     "next/server":{NextResponse:Response},
     "next/headers":{cookies:async()=>({get:name=>jar.has(name)?{value:jar.get(name)}:undefined,set:(name,value,options)=>{assert.equal(options.httpOnly,true);jar.set(name,value);},delete:name=>jar.delete(name)})}
   });
   const request=(body, origin="http://localhost:3000")=>new Request("http://localhost:3000/api/tebex/checkout",{method:"POST",headers:{"content-type":"application/json",origin},body:JSON.stringify({username:"Player_1",items:[{packageId:"123",quantity:2}],...body})});
   return {POST,request,calls,jar,get basket(){return basket;},verify:()=>{basket.username="Player_1";basket.username_id=10;}};
 }
-test("fresh Java basket binds the username without the rejected IP field or account authentication",async()=>{
+test("fresh Java basket binds the username and customer IP through authenticated requests",async()=>{
   const h=harness({authOptions:[]});const response=await h.POST(h.request());
   assert.equal(response.status,200);
   assert.equal((await response.json()).checkoutUrl,"https://pay.tebex.io/basket-123");
   const create=JSON.parse(h.calls.find(c=>c.path.endsWith("/baskets")).init.body);
-  assert.equal(create.username,"Player_1");assert.equal(Object.hasOwn(create,"ip_address"),false);
+  assert.equal(create.username,"Player_1");assert.equal(create.ip_address,"203.0.113.10");
   assert.equal(h.calls.some(c=>c.path.includes("/auth?")),false);
   assert.deepEqual(h.basket.packages,[{id:123,in_basket:{quantity:2}}]);
 });
@@ -121,5 +126,23 @@ test("changing recipient creates a fresh basket for the new Java username",async
   assert.equal(h.calls.filter(c=>c.path.endsWith("/baskets")&&c.init.method==="POST").length,2);
   assert.equal(h.basket.username,"Player_2");
   assert.deepEqual(h.basket.packages,[{id:123,in_basket:{quantity:2}}]);
+});
+test("checkout refuses basket creation when server credentials are missing",async()=>{
+  const h=harness({configured:false});const response=await h.POST(h.request());
+  assert.equal(response.status,503);
+  assert.match((await response.json()).error,/secure checkout/i);
+  assert.equal(h.calls.length,0);
+});
+test("checkout refuses basket creation without a trusted customer IP",async()=>{
+  const h=harness({trustedIp:null});const response=await h.POST(h.request());
+  assert.equal(response.status,503);
+  assert.equal(h.calls.length,0);
+});
+test("a saved basket attributed to a different IP is replaced",async()=>{
+  const h=harness();await h.POST(h.request());h.basket.ip="203.0.113.20";
+  const response=await h.POST(h.request());
+  assert.equal(response.status,200);
+  assert.equal(h.calls.filter(c=>c.path.endsWith("/baskets")&&c.init.method==="POST").length,2);
+  assert.equal(h.basket.ip,"203.0.113.10");
 });
 

@@ -4,6 +4,7 @@ import {
   accountPath,
   fetchCatalog,
   tebexRequest,
+  tebexAuthorization,
   StoreUnavailableError,
 } from "@/lib/tebex";
 import { validateCheckoutItems, trustedTebexUrl } from "@/lib/validation";
@@ -11,6 +12,7 @@ import {
   readJsonBody,
   RequestBodyError,
   checkoutOrigin,
+  clientIp,
 } from "@/lib/request";
 
 export const dynamic = "force-dynamic";
@@ -78,6 +80,16 @@ export async function POST(request: Request) {
       );
     }
 
+    const authorization = tebexAuthorization();
+    const customerIp = clientIp(request);
+
+    if (!customerIp) {
+      return NextResponse.json(
+        { error: "We couldn't determine your connection details. Please use the official store to continue checkout." },
+        { status: 503 },
+      );
+    }
+
     const catalog = await fetchCatalog(signal);
     type CatalogProduct = (typeof catalog)[number];
     const products: CatalogProduct[] = [];
@@ -110,8 +122,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const api = (path: string, init: RequestInit = {}) =>
-      tebexRequest(path, { ...init, signal });
+    const api = (path: string, init: RequestInit = {}) => {
+      const headers = new Headers(init.headers);
+      headers.set("Authorization", authorization);
+      return tebexRequest(path, { ...init, headers, signal });
+    };
 
     const jar = await cookies();
     const savedBasket = jar.get("rx-basket")?.value;
@@ -134,6 +149,7 @@ export async function POST(request: Request) {
 
       if (
         basket?.complete ||
+        (basket && basket.ip !== customerIp) ||
         (basket?.username &&
           basket.username.toLowerCase() !== username.toLowerCase())
       ) {
@@ -152,10 +168,11 @@ export async function POST(request: Request) {
       basket = (
         await api(accountPath("/baskets"), {
           method: "POST",
-          // Bind the Java recipient during creation. The username-only
-          // payload works without overriding the customer IP.
+          // Backend baskets need the Java recipient and the customer's IP.
+          // The IP override requires the Basic auth header supplied by api().
           body: JSON.stringify({
             username,
+            ip_address: customerIp,
             complete_url: `${origin}/store/success`,
             cancel_url: `${origin}/cart`,
             complete_auto_redirect: true,

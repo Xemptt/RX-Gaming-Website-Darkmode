@@ -16,12 +16,21 @@ and sitemap URLs are generated at build time. Rebuild when changing domains.
 For local development set SITE_URL=http://localhost:3000 or leave it unset.
 TEBEX_PUBLIC_TOKEN is your store's Headless API public token.
 The existing NEXT_PUBLIC_TEBEX_PUBLIC_TOKEN name is also supported.
-Never put a private Tebex API key here.
+TEBEX_PRIVATE_KEY is the Private Key from the same Tebex API Keys page. Set it
+only as a server-side environment variable. Never use a NEXT_PUBLIC_ prefix
+for the private key or commit its value to source control.
 
 Checkout attaches the Minecraft Java username when creating the Tebex basket.
-Basket creation sends the username and redirect fields without a customer IP
-override. A customer IP header is not required for checkout.
-Set SITE_URL to your HTTPS public origin for production.
+Backend baskets also send the real customer IP. Tebex requires HTTP Basic
+authentication with the public token and private key for this IP override;
+omitting authentication produces HTTP 422: Basic auth credentials are required.
+Vercel provides the trusted customer IP header automatically. Other hosts must
+set TEBEX_CLIENT_IP_HEADER to a header overwritten by their trusted reverse
+proxy with one actual IPv4/IPv6 address, and block direct access to the app.
+Local checkout needs the same trusted proxy setup. Without a private key or
+trusted customer IP, visitors can use the official hosted Tebex store.
+Set SITE_URL to your HTTPS public origin for production. Add both Tebex keys
+to the Vercel Production environment before deploying the checkout fix.
 
 VALIDATION
   npm test
@@ -35,7 +44,7 @@ PRODUCTION
 Or use Dockerfile. Supply your public origin while building:
   docker build --build-arg SITE_URL=https://your-website.example -t rx-gaming .
 This sets the same default SITE_URL in the runtime image. Supply the Tebex
-token when running the container. Do not put
+keys and trusted proxy configuration when running the container. Do not put
 tokens or secrets in build arguments. .env files and local node_modules are
 excluded from the build context. Rebuild the image if the public origin changes.
 The Docker image runs Next.js standalone output as a non-root user.

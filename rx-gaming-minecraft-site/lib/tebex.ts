@@ -15,7 +15,7 @@ function tebexErrorDetail(body: string): string | undefined {
         candidates.push(...(Array.isArray(value) ? value : [value]));
       }
     }
-    const detail = candidates.find((value): value is string => typeof value === "string" && value.trim());
+    const detail = candidates.find((value): value is string => typeof value === "string" && value.trim().length > 0);
     return detail
       ?.replace(/<[^>]*>/g, " ")
       .replace(/[\u0000-\u001f\u007f]/g, " ")
@@ -26,15 +26,28 @@ function tebexErrorDetail(body: string): string | undefined {
     return undefined;
   }
 }
-export function accountPath(path: string) {
+function publicToken() {
   const token = process.env.TEBEX_PUBLIC_TOKEN || process.env.NEXT_PUBLIC_TEBEX_PUBLIC_TOKEN;
   if (!token) throw new StoreUnavailableError("The store is not configured yet.");
-  return `/accounts/${encodeURIComponent(token)}${path}`;
+  return token.trim();
+}
+export function accountPath(path: string) {
+  return `/accounts/${encodeURIComponent(publicToken())}${path}`;
+}
+export function tebexAuthorization() {
+  const privateKey = process.env.TEBEX_PRIVATE_KEY?.trim();
+  if (!privateKey) {
+    throw new StoreUnavailableError("Secure checkout is temporarily unavailable. Please use the official store.");
+  }
+  return `Basic ${Buffer.from(`${publicToken()}:${privateKey}`, "utf8").toString("base64")}`;
 }
 export async function tebexRequest(path: string, init: RequestInit = {}) {
+  const headers = new Headers(init.headers);
+  if (!headers.has("Accept")) headers.set("Accept", "application/json");
+  if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json");
   const response = await fetch(`${apiRoot}${path}`, {
     ...init,
-    headers: { Accept: "application/json", "Content-Type": "application/json", ...init.headers },
+    headers,
     cache: "no-store", signal: init.signal ? AbortSignal.any([init.signal, AbortSignal.timeout(8000)]) : AbortSignal.timeout(8000),
   });
   if (!response.ok) {
