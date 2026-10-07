@@ -5,6 +5,27 @@ export class StoreUnavailableError extends Error {
   constructor(message: string, public status?: number) { super(message); }
 }
 const apiRoot = "https://headless.tebex.io/api";
+function tebexErrorDetail(body: string): string | undefined {
+  try {
+    const payload = JSON.parse(body);
+    const candidates: unknown[] = [payload?.message, payload?.error, payload?.detail];
+    if (Array.isArray(payload?.errors)) candidates.push(...payload.errors);
+    else if (payload?.errors && typeof payload.errors === "object") {
+      for (const value of Object.values(payload.errors)) {
+        candidates.push(...(Array.isArray(value) ? value : [value]));
+      }
+    }
+    const detail = candidates.find((value): value is string => typeof value === "string" && value.trim());
+    return detail
+      ?.replace(/<[^>]*>/g, " ")
+      .replace(/[\u0000-\u001f\u007f]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 180);
+  } catch {
+    return undefined;
+  }
+}
 export function accountPath(path: string) {
   const token = process.env.TEBEX_PUBLIC_TOKEN || process.env.NEXT_PUBLIC_TEBEX_PUBLIC_TOKEN;
   if (!token) throw new StoreUnavailableError("The store is not configured yet.");
@@ -16,7 +37,15 @@ export async function tebexRequest(path: string, init: RequestInit = {}) {
     headers: { Accept: "application/json", "Content-Type": "application/json", ...init.headers },
     cache: "no-store", signal: init.signal ? AbortSignal.any([init.signal, AbortSignal.timeout(8000)]) : AbortSignal.timeout(8000),
   });
-  if (!response.ok) throw new StoreUnavailableError(`Tebex is unavailable (HTTP ${response.status}). Please try again or visit the official store.`, response.status);
+  if (!response.ok) {
+    const detail = tebexErrorDetail(await response.text());
+    const reason = detail ? ` Tebex said: ${detail}` : "";
+    const statusText = response.status >= 500 ? "is unavailable" : "rejected the request";
+    throw new StoreUnavailableError(
+      `Tebex ${statusText} (HTTP ${response.status}).${reason} Please try again or visit the official store.`,
+      response.status,
+    );
+  }
   if (response.status === 204) return {};
   const text = await response.text();
   return text ? JSON.parse(text) : {};
