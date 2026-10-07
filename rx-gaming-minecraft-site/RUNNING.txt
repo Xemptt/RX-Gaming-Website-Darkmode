@@ -18,14 +18,10 @@ TEBEX_PUBLIC_TOKEN is your store's Headless API public token.
 The existing NEXT_PUBLIC_TEBEX_PUBLIC_TOKEN name is also supported.
 Never put a private Tebex API key here.
 
-Vercel automatically supplies the trusted customer IP header used by checkout.
-For another production host, TEBEX_CLIENT_IP_HEADER must name a header that
-YOUR reverse proxy overwrites with the actual customer IP. It must contain one
-IPv4/IPv6 address, not a forwarded list. Block direct access to the app origin
-so visitors cannot spoof this header. Set SITE_URL to your HTTPS public origin.
-Do not set TEBEX_CLIENT_IP_HEADER merely to silence the configuration error.
-Local checkout deliberately returns an explanatory error without a trusted
-customer IP; the official hosted Tebex store remains available.
+Checkout attaches the Minecraft Java username when creating the Tebex basket.
+Basket creation sends the username and redirect fields without a customer IP
+override. A customer IP header is not required for checkout.
+Set SITE_URL to your HTTPS public origin for production.
 
 VALIDATION
   npm test
@@ -39,7 +35,7 @@ PRODUCTION
 Or use Dockerfile. Supply your public origin while building:
   docker build --build-arg SITE_URL=https://your-website.example -t rx-gaming .
 This sets the same default SITE_URL in the runtime image. Supply the Tebex
-token and trusted proxy configuration when running the container. Do not put
+token when running the container. Do not put
 tokens or secrets in build arguments. .env files and local node_modules are
 excluded from the build context. Rebuild the image if the public origin changes.
 The Docker image runs Next.js standalone output as a non-root user.

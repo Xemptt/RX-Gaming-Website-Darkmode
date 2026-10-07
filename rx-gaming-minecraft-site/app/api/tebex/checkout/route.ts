@@ -152,9 +152,10 @@ export async function POST(request: Request) {
       basket = (
         await api(accountPath("/baskets"), {
           method: "POST",
-          // Headless API basket creation accepts these checkout fields.
-          // The Minecraft username is bound during Tebex basket auth below.
+          // Bind the Java recipient during creation. The username-only
+          // payload works without overriding the customer IP.
           body: JSON.stringify({
+            username,
             complete_url: `${origin}/store/success`,
             cancel_url: `${origin}/cart`,
             complete_auto_redirect: true,
