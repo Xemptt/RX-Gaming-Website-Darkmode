@@ -52,12 +52,12 @@ test("realm categories override ambiguous package names and live currency is ret
     const rl=await fetchTebexProducts("rlcraft");assert.deepEqual(rl.map(p=>p.id),["1","3"]);assert.equal(rl[0].currency,"GBP");assert.equal(rl[1].img,"/ranks/rlcraft/rank-dragonborn.webp");
     const ic=await fetchTebexProducts("insanecraft");assert.deepEqual(ic.map(p=>p.id),["2","4","5","6","7","8","9"]);
     const expectedRewards=[
-      ["5 homes total","2 PlayerVaultsX vaults total","1 Insane Crate Key"],
-      ["All Extreme permissions","6 homes total","3 PlayerVaultsX vaults total","2 Insane Crate Keys"],
-      ["All Extreme and Mental permissions","7 homes total","4 PlayerVaultsX vaults total","4 Insane Crate Keys"],
-      ["All Extreme, Mental and Loony permissions","8 homes total","5 PlayerVaultsX vaults total","6 Insane Crate Keys"],
-      ["All Extreme, Mental, Loony and Nutty permissions","11 homes total","6 PlayerVaultsX vaults total","8 Insane Crate Keys"],
-      ["All Extreme, Mental, Loony, Nutty and Crazy permissions","13 homes total","7 PlayerVaultsX vaults total","10 Insane Crate Keys"],
+      ["5 homes","/kit extreme","/hat","/workbench","May join private betas and whitelisted servers"],
+      ["Includes everything from Extreme, plus:","6 homes total","3 PlayerVaultsX vaults total","/enderchest"],
+      ["Includes everything from Extreme and Mental, plus:","7 homes total","4 PlayerVaultsX vaults total","/nick"],
+      ["Includes everything from Extreme, Mental and Loony, plus:","8 homes total","5 PlayerVaultsX vaults total","/repair","/feed"],
+      ["Includes everything from Extreme, Mental, Loony and Nutty, plus:","11 homes total","6 PlayerVaultsX vaults total","/heal"],
+      ["Includes everything from Extreme, Mental, Loony, Nutty and Crazy, plus:","13 homes total","7 PlayerVaultsX vaults total","/fly"],
     ];
     for (const [index,benefits] of expectedRewards.entries()) for (const benefit of benefits) assert.ok(ic[index+1].description.includes(benefit),`${ic[index+1].name} includes ${benefit}`);
     global.fetch=async()=>new Response("{}",{status:503});
