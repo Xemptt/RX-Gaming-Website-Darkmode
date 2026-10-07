@@ -1,0 +1,103 @@
+kits:
+  starter:
+    delay: 86400
+    items:
+      - 276 1 name:&bInsane_Slayer sharpness:3 unbreaking:3
+      - 310 1 protection:2 unbreaking:3
+      - 311 1 protection:2 unbreaking:3
+      - 312 1 protection:2 unbreaking:3
+      - 313 1 protection:2 unbreaking:3
+      - 278 1 name:&bWorld_Breaker efficiency:4 unbreaking:3 fortune:2
+      - 279 1 name:&bLumberjack_Axe efficiency:3 unbreaking:3
+      - 277 1 efficiency:3 unbreaking:3
+      - 'ironchest:iron_chest 2 name:&fIron_Storage_Chest lore:&754_Slots_of_storage!'
+      - 326 1 name:&bWater_Bucket
+      - 50 64
+      - 'harvestcraft:baconcheeseburgeritem 16 name:&6Bacon_Cheeseburger'
+      - 'harvestcraft:pizzaitem 16 name:&cFresh_Pizza'
+  extreme:
+    delay: 86400
+    items:
+      - 'botania:manasteelsword 1 name:&aExtreme_Mana_Slicer sharpness:4 unbreaking:3 fireaspect:1'
+      - 'botania:manasteelpick 1 name:&aExtreme_Mana_Pick efficiency:4 unbreaking:3 fortune:2'
+      - 'botania:manasteelaxe 1 name:&aExtreme_Mana_Hatchet efficiency:4 unbreaking:3'
+      - 'botania:manasteelshovel 1 efficiency:4 unbreaking:3'
+      - 'ironchest:iron_chest:3 1 name:&dCopper_Storage_Chest lore:&763_Slots_of_modular_storage!'
+      - 'harvestcraft:baconcheeseburgeritem 16 name:&6Bacon_Cheeseburger'
+      - 'harvestcraft:chocolatedonutitem 8 name:&dChocolate_Donut'
+  mental:
+    delay: 172800
+    items:
+      - 'botania:manasteelhelm 1 protection:3 unbreaking:3 respiration:2'
+      - 'botania:manasteelchest 1 protection:3 unbreaking:3 thorns:1'
+      - 'botania:manasteellegs 1 protection:3 unbreaking:3'
+      - 'botania:manasteelboots 1 protection:3 unbreaking:3 feather_falling:2'
+      - 'ironchest:iron_chest:3 2 name:&dCopper_Storage_Chest lore:&763_Slots_of_modular_storage!'
+      - 'harvestcraft:delightedmealitem 16 name:&dDelighted_Meal'
+      - 'harvestcraft:beefwellingtonitem 16 name:&eBeef_Wellington'
+  loony:
+    delay: 259200
+    items:
+      - 'aether_legacy:gravitite_helmet 1 protection:4 unbreaking:3 respiration:3 aqua_affinity:1'
+      - 'aether_legacy:gravitite_chestplate 1 protection:4 unbreaking:3 thorns:2'
+      - 'aether_legacy:gravitite_leggings 1 protection:4 unbreaking:3'
+      - 'aether_legacy:gravitite_boots 1 protection:4 unbreaking:3 feather_falling:3'
+      - 'aether_legacy:gravitite_sword 1 name:&5Loony_Gravitite_Cleaver sharpness:5 unbreaking:3 fireaspect:2 loot_bonus_mobs:3'
+      - 'aether_legacy:gravitite_pickaxe 1 name:&5Loony_Gravitite_Shatterer efficiency:5 unbreaking:3 fortune:3'
+      - 'aether_legacy:gravitite_axe 1 efficiency:5 unbreaking:3'
+      - 'aether_legacy:gravitite_shovel 1 efficiency:5 unbreaking:3'
+      - 'ironchest:iron_chest:1 2 name:&eGold_Storage_Chest lore:&781_Slots_of_massive_storage!'
+      - 'harvestcraft:beefwellingtonitem 16 name:&eBeef_Wellington'
+  nutty:
+    delay: 345600
+    items:
+      - 'botania:terrasteelhelm 1 protection:4 unbreaking:3 respiration:3 aqua_affinity:1'
+      - 'botania:terrasteelchest 1 protection:4 unbreaking:3 thorns:3'
+      - 'botania:terrasteellegs 1 protection:4 unbreaking:3'
+      - 'botania:terrasteelboots 1 protection:4 unbreaking:3 feather_falling:4'
+      - 'thaumcraft:elemental_sword 1 name:&cNutty_Elemental_Blade sharpness:5 unbreaking:3 fireaspect:2 loot_bonus_mobs:3 sweeping:3'
+      - 'thaumcraft:elemental_pick 1 efficiency:5 unbreaking:3 fortune:3'
+      - 'thaumcraft:elemental_axe 1 efficiency:5 unbreaking:3'
+      - 'thaumcraft:elemental_shovel 1 efficiency:5 unbreaking:3'
+      - 'ironchest:iron_chest:5 2 name:&bDiamond_Storage_Chest lore:&7108_Slots_of_massive_storage!'
+      - 'harvestcraft:delightedmealitem 16 name:&dDelighted_Meal'
+      - 'harvestcraft:epicbaconitem 16 name:&cEpic_Bacon'
+      - 322 2 name:&eGolden_Apple
+  crazy:
+    delay: 432000
+    items:
+      - 'draconicevolution:draconic_helm 1'
+      - 'draconicevolution:draconic_boots 1'
+      - 'draconicevolution:draconic_sword 1 name:&cCrazy_Draconic_Blade'
+      - 'draconicevolution:draconic_pick 1 name:&cCrazy_World_Eater'
+      - 'draconicevolution:draconic_axe 1'
+      - 'draconicevolution:draconic_shovel 1'
+      - 'draconicevolution:energy_infuser 1'
+      - 'draconicevolution:generator 1'
+      - 'ironchest:iron_chest:6 2 name:&5Obsidian_Storage_Chest lore:&7108_Slots_with_Blast_Immunity!'
+      - 'harvestcraft:delightedmealitem 24 name:&dDelighted_Meal'
+      - 'harvestcraft:beefwellingtonitem 16 name:&eBeef_Wellington'
+      - 322 4 name:&eGolden_Apple
+  insane:
+    delay: 604800
+    items:
+      - 'draconicevolution:draconic_helm 1 protection:4 unbreaking:3 respiration:3 aqua_affinity:1'
+      - 'draconicevolution:draconic_chest 1 protection:4 unbreaking:3 thorns:2'
+      - 'draconicevolution:draconic_legs 1 protection:4 unbreaking:3'
+      - 'draconicevolution:draconic_boots 1 protection:4 unbreaking:3 feather_falling:4'
+      - 'ironchest:iron_chest:6 3 name:&5Insane_Obsidian_Storage lore:&7108_Slots_with_Blast_Immunity!'
+      - 'draconicevolution:energy_infuser 1'
+      - 'draconicevolution:generator 1'
+      - 'harvestcraft:delightedmealitem 32 name:&dDelighted_Meal'
+      - 'harvestcraft:epicbaconitem 32 name:&cEpic_Bacon'
+      - 'harvestcraft:applejuiceitem 32 name:&bChilled_Apple_Juice'
+      - 322:1 4 name:&4Enchanted_Notch_Apple
+  food:
+    delay: 21600 
+    items:
+      - 'harvestcraft:delightedmealitem 8 name:&dDelighted_Meal lore:&eThe_absolute_best_food_in_Insane_Craft!'
+      - 'harvestcraft:beefwellingtonitem 8 name:&eBeef_Wellington'
+      - 'harvestcraft:epicbaconitem 16 name:&cEpic_Bacon'
+      - 'harvestcraft:pizzaitem 8 name:&cSupreme_Pizza'
+      - 'harvestcraft:applejuiceitem 16 name:&bChilled_Apple_Juice'
+      - 322 4 name:&eGolden_Apple

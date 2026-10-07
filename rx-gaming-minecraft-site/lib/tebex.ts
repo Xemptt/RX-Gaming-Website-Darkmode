@@ -43,60 +43,77 @@ const rankArtwork: Array<{ name: RegExp; slug: string }> = [
   { name: /\bdragonborn\b/i, slug: "dragonborn" },
 ];
 const insanecraftRankRewards: Record<string, string> = {
-  extreme: `<h4>Extreme Rank — Starter Tier</h4>
-    <p>InsaneCraft starter donor rank. Includes:</p>
+  extreme: `<h4>💠 EXTREME RANK</h4>
+    <p><strong>✨ Small quality-of-life perks and a solid start in InsaneCraft.</strong></p>
+    <p><strong>🎁 RANK PERKS</strong></p>
     <ul>
-      <li>5 homes total</li>
-      <li>2 PlayerVaultsX vaults total</li>
-      <li>Essentials commands: /hat and /workbench</li>
-      <li>UltraCosmetics: Piggy pet and Iron Hat</li>
-      <li>Extreme chat prefix</li>
+      <li>🏠 5 homes</li>
+      <li>🎒 <code>/kit extreme</code></li>
+      <li>🛠️ <code>/hat</code></li>
+      <li>🧰 <code>/workbench</code></li>
+      <li>🏷️ Extreme prefix in-game</li>
+      <li>🌐 May join private betas and whitelisted servers</li>
     </ul>
-    <p>Higher InsaneCraft ranks inherit Extreme permissions and cosmetics.</p>`,
-  mental: `<h4>Mental Rank</h4>
-    <p>Includes everything from Extreme, plus:</p>
+    <p>⬆️ Higher InsaneCraft ranks inherit these perks.</p>`,
+  mental: `<h4>💠 MENTAL RANK</h4>
+    <p><strong>✨ More convenience and cosmetic perks.</strong></p>
+    <p>📈 Includes everything from Extreme, plus:</p>
+    <p><strong>🎁 RANK PERKS</strong></p>
     <ul>
-      <li>6 homes total</li>
-      <li>3 PlayerVaultsX vaults total</li>
-      <li>Essentials command: /enderchest</li>
-      <li>UltraCosmetics: Dog pet and Diamond Hat</li>
-      <li>Mental chat prefix</li>
+      <li>🏠 6 homes total</li>
+      <li>🔐 3 PlayerVaultsX vaults total</li>
+      <li>🎒 <code>/kit mental</code></li>
+      <li>🧰 <code>/enderchest</code></li>
+      <li>🎭 Dog pet and Diamond Hat</li>
+      <li>🏷️ Mental prefix in-game</li>
     </ul>`,
-  loony: `<h4>Loony Rank</h4>
-    <p>Includes everything from Mental, plus:</p>
+  loony: `<h4>💠 LOONY RANK</h4>
+    <p><strong>✨ More storage and ways to personalise your character.</strong></p>
+    <p>📈 Includes everything from Extreme and Mental, plus:</p>
+    <p><strong>🎁 RANK PERKS</strong></p>
     <ul>
-      <li>7 homes total</li>
-      <li>4 PlayerVaultsX vaults total</li>
-      <li>Essentials command: /nick</li>
-      <li>UltraCosmetics: Glacial Steed mount and Happy emote</li>
-      <li>Loony chat prefix</li>
+      <li>🏠 7 homes total</li>
+      <li>🔐 4 PlayerVaultsX vaults total</li>
+      <li>🎒 <code>/kit loony</code></li>
+      <li>✏️ <code>/nick</code></li>
+      <li>🎭 Glacial Steed mount and Happy emote</li>
+      <li>🏷️ Loony prefix in-game</li>
     </ul>`,
-  nutty: `<h4>Nutty Rank</h4>
-    <p>Includes everything from Loony, plus:</p>
+  nutty: `<h4>💠 NUTTY RANK</h4>
+    <p><strong>✨ More homes, useful commands and cosmetics.</strong></p>
+    <p>📈 Includes everything from Extreme, Mental and Loony, plus:</p>
+    <p><strong>🎁 RANK PERKS</strong></p>
     <ul>
-      <li>8 homes total</li>
-      <li>5 PlayerVaultsX vaults total</li>
-      <li>Essentials commands: /repair and /feed</li>
-      <li>UltraCosmetics: Creeper morph and Ender Aura particle effect</li>
-      <li>Nutty chat prefix</li>
+      <li>🏠 8 homes total</li>
+      <li>🔐 5 PlayerVaultsX vaults total</li>
+      <li>🎒 <code>/kit nutty</code></li>
+      <li>🛠️ <code>/repair</code> and <code>/feed</code></li>
+      <li>🎭 Creeper morph and Ender Aura particle effect</li>
+      <li>🏷️ Nutty prefix in-game</li>
     </ul>`,
-  crazy: `<h4>Crazy Rank</h4>
-    <p>Includes everything from Nutty, plus:</p>
+  crazy: `<h4>💠 CRAZY RANK</h4>
+    <p><strong>✨ Big quality-of-life upgrades and standout cosmetics.</strong></p>
+    <p>📈 Includes everything from Extreme, Mental, Loony and Nutty, plus:</p>
+    <p><strong>🎁 RANK PERKS</strong></p>
     <ul>
-      <li>11 homes total</li>
-      <li>6 PlayerVaultsX vaults total</li>
-      <li>Essentials command: /heal</li>
-      <li>UltraCosmetics: Firework gadget and Rainbow projectile effect</li>
-      <li>Crazy chat prefix</li>
+      <li>🏠 11 homes total</li>
+      <li>🔐 6 PlayerVaultsX vaults total</li>
+      <li>🎒 <code>/kit crazy</code></li>
+      <li>❤️ <code>/heal</code></li>
+      <li>🎭 Firework gadget and Rainbow projectile effect</li>
+      <li>🏷️ Crazy prefix in-game</li>
     </ul>`,
-  insane: `<h4>Insane Rank</h4>
-    <p>Includes everything from Crazy, plus:</p>
+  insane: `<h4>💠 INSANE RANK</h4>
+    <p><strong>✨ The highest InsaneCraft donor tier.</strong></p>
+    <p>📈 Includes everything from Extreme, Mental, Loony, Nutty and Crazy, plus:</p>
+    <p><strong>🎁 RANK PERKS</strong></p>
     <ul>
-      <li>13 homes total</li>
-      <li>7 PlayerVaultsX vaults total</li>
-      <li>Essentials command: /fly</li>
-      <li>UltraCosmetics: Dragon mount and Warden pet</li>
-      <li>Insane chat prefix</li>
+      <li>🏠 13 homes total</li>
+      <li>🔐 7 PlayerVaultsX vaults total</li>
+      <li>🎒 <code>/kit insane</code></li>
+      <li>🪽 <code>/fly</code></li>
+      <li>🎭 Dragon mount and Warden pet</li>
+      <li>🏷️ Insane prefix in-game</li>
     </ul>`,
 };
 function getInsanecraftRankRewards(name: string): string | undefined {
