@@ -299,81 +299,75 @@ export async function POST(request: Request) {
           );
         }
       } else {
+        // The category listing omits required package options. Read them from
+        // Tebex and fill a server selection only when there is one choice.
+        const details = (await api(accountPath(`/packages/${item.packageId}`))).data;
+        const options = details?.options ?? [];
+        if (!details || !Array.isArray(options)) {
+          throw new StoreUnavailableError("Package options are unavailable. Please try again.");
+        }
+        const variableData: Record<string, string> = {};
+        for (const option of options) {
+          const value = option?.options?.[0]?.value;
+          if (option?.name !== "server" || option?.type !== "dropdown" || !Array.isArray(option.options) || option.options.length !== 1 || !/^[1-9]\d*$/.test(String(value))) {
+            throw new StoreUnavailableError("This item needs additional choices. Please select its options in the official store.");
+          }
+          variableData.server = String(value);
+        }
+        if (Array.isArray(details.variables) && details.variables.length) {
+          throw new StoreUnavailableError("This item needs additional details. Please complete them in the official store.");
+        }
         await api(`/baskets/${ident}/packages`, {
           method: "POST",
           body: JSON.stringify({
             package_id: item.packageId,
             quantity: item.quantity,
+            ...(Object.keys(variableData).length ? { variable_data: variableData } : {}),
           }),
         });
       }
     }
 
-    if (voucherCode) {
-      const coupons = Array.isArray(basket.coupons) ? basket.coupons : [];
-      const giftcards = Array.isArray(basket.giftcards) ? basket.giftcards : [];
-      const matchingCoupon = voucherType === "coupon" && coupons.some(
-        (coupon: { coupon_code?: string }) => coupon.coupon_code === voucherCode,
-      );
-      const matchingGiftcard = voucherType === "giftcard" && giftcards.some(
-        (giftcard: { card_number?: string }) => giftcard.card_number === voucherCode,
-      );
+    // Tebex returns coupons as { code }, but mutations require coupon_code.
+    // Sync even when the input is blank so clearing a code removes it on Tebex.
+    const coupons: Array<{ code?: string; coupon_code?: string }> = Array.isArray(basket.coupons) ? basket.coupons : [];
+    const giftcards: Array<{ card_number?: string }> = Array.isArray(basket.giftcards) ? basket.giftcards : [];
+    const couponCode = (coupon: (typeof coupons)[number]) => coupon.code ?? coupon.coupon_code;
+    const matchingCoupon = voucherType === "coupon" && !!voucherCode && coupons.some(coupon => couponCode(coupon) === voucherCode);
+    const matchingGiftcard = voucherType === "giftcard" && !!voucherCode && giftcards.some(card => card.card_number === voucherCode);
 
+    for (const coupon of coupons) {
+      const code = couponCode(coupon);
+      if (voucherType !== "coupon" || !voucherCode || code !== voucherCode) {
+        if (!code) throw new StoreUnavailableError("Your saved discount could not be updated. Please use the official store.");
+        await api(accountPath(`/baskets/${ident}/coupons/remove`), {
+          method: "POST",
+          body: JSON.stringify({ coupon_code: code }),
+        });
+      }
+    }
+    for (const card of giftcards) {
+      if (voucherType !== "giftcard" || !voucherCode || card.card_number !== voucherCode) {
+        if (!card.card_number) throw new StoreUnavailableError("Your saved gift card could not be updated. Please use the official store.");
+        await api(accountPath(`/baskets/${ident}/giftcards/remove`), {
+          method: "POST",
+          body: JSON.stringify({ card_number: card.card_number }),
+        });
+      }
+    }
+
+    if (voucherCode && !matchingCoupon && !matchingGiftcard) {
       try {
-        if (voucherType === "coupon") {
-          if (!matchingCoupon) {
-            if (coupons.length) {
-              await api(accountPath(`/baskets/${ident}/coupons/remove`), { method: "POST" });
-            }
-            for (const giftcard of giftcards) {
-              await api(accountPath(`/baskets/${ident}/giftcards/remove`), {
-                method: "POST",
-                body: JSON.stringify({ card_number: giftcard.card_number }),
-              });
-            }
-            await api(accountPath(`/baskets/${ident}/coupons`), {
-              method: "POST",
-              body: JSON.stringify({ coupon_code: voucherCode }),
-            });
-          } else {
-            for (const giftcard of giftcards) {
-              await api(accountPath(`/baskets/${ident}/giftcards/remove`), {
-                method: "POST",
-                body: JSON.stringify({ card_number: giftcard.card_number }),
-              });
-            }
-          }
-        } else if (!matchingGiftcard) {
-          if (coupons.length) {
-            await api(accountPath(`/baskets/${ident}/coupons/remove`), { method: "POST" });
-          }
-          for (const giftcard of giftcards) {
-            await api(accountPath(`/baskets/${ident}/giftcards/remove`), {
-              method: "POST",
-              body: JSON.stringify({ card_number: giftcard.card_number }),
-            });
-          }
-          await api(accountPath(`/baskets/${ident}/giftcards`), {
-            method: "POST",
-            body: JSON.stringify({ card_number: voucherCode }),
-          });
-        } else {
-          if (coupons.length) {
-            await api(accountPath(`/baskets/${ident}/coupons/remove`), { method: "POST" });
-          }
-          for (const giftcard of giftcards) {
-            if (giftcard.card_number !== voucherCode) {
-              await api(accountPath(`/baskets/${ident}/giftcards/remove`), {
-                method: "POST",
-                body: JSON.stringify({ card_number: giftcard.card_number }),
-              });
-            }
-          }
-        }
+        await api(accountPath(`/baskets/${ident}/${voucherType === "coupon" ? "coupons" : "giftcards"}`), {
+          method: "POST",
+          body: JSON.stringify(voucherType === "coupon" ? { coupon_code: voucherCode } : { card_number: voucherCode }),
+        });
       } catch (error) {
-        if (error instanceof StoreUnavailableError && error.status && error.status < 500) {
+        if (error instanceof StoreUnavailableError && [400, 404, 422].includes(error.status || 0)) {
+          const label = voucherType === "coupon" ? "discount code" : "gift card";
+          const reason = error.detail || "Check the code and its conditions, then try again.";
           return NextResponse.json(
-            { error: "That code could not be applied. Check the code and type, then try again." },
+            { error: `That ${label} could not be applied. ${reason}`, resumable: true },
             { status: 422 },
           );
         }

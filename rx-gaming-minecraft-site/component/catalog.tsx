@@ -39,11 +39,32 @@ export default function Catalog({ realm }: { realm: string }) {
   useEffect(() => {
     const controller = new AbortController();
     setProducts(null); setError("");
-    fetch(`/api/tebex/catalog?realm=${encodeURIComponent(realm)}`, { signal: controller.signal })
-      .then(async response => { const data = await response.json(); if (!response.ok) throw new Error(data.error); return data.products; })
-      .then(data => setProducts(data))
-      .catch(error => { if (!controller.signal.aborted) setError(error.message || "Unable to load products."); });
-    return () => controller.abort();
+    let pending = false;
+    const refresh = async () => {
+      if (document.hidden || pending) return;
+      pending = true;
+      try {
+        const response = await fetch(`/api/tebex/catalog?realm=${encodeURIComponent(realm)}`, {
+          cache: "no-store",
+          signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error);
+        if (!controller.signal.aborted) { setProducts(data.products); setError(""); }
+      } catch (error) {
+        if (!controller.signal.aborted) setError(error instanceof Error ? error.message : "Unable to load products.");
+      } finally {
+        pending = false;
+      }
+    };
+    void refresh();
+    const timer = window.setInterval(refresh, 60000);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      controller.abort();
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", refresh);
+    };
   }, [realm, attempt]);
   return <section aria-label="Store products" className="space-y-6">
     <p className="text-sm text-muted">Prices and availability come from the official store. Confirm your account, discounts and final total at Tebex checkout.</p>
@@ -59,6 +80,7 @@ export default function Catalog({ realm }: { realm: string }) {
           </span>}
         </div>
         <h2 className="text-xl font-bold break-words">{product.name}</h2>
+        {product.isPromo && <span className="self-start bg-[#ffcc00] text-black px-2 py-1 text-sm font-bold">On sale</span>}
         <p className="text-2xl text-accent font-bold">{product.price.toFixed(2)} {product.currency}</p>
         {product.description && formatPackageDescription(product.description) && <div className="border-t border-frame/60 pt-3">
           <h3 className="text-sm font-bold mb-1">What’s included</h3>

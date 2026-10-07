@@ -7,6 +7,7 @@ import { useTheme } from "next-themes";
 import { useCustomCursor } from "@/component/appearance-provider";
 import { useCartStore } from "@/store/cart";
 import settings from "@/store-settings.json";
+import StoreAnnouncement from "@/component/store-announcement";
 const links = [["/", "Home"], ["/server-details", "Details"], ["/store/main", "Store"], ["/careers", "Careers"], ["/voucher", "Voucher"], ["/documents", "Documents"], ["/changelog", "Changelog"]];
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -34,7 +35,7 @@ export default function Navbar() {
     className="text-sm text-center leading-relaxed font-bold tracking-wide w-full text-[#FF3333] animate-pulse"
     style={{ textShadow: '0 0 8px rgba(255, 51, 51, 0.8), 0 0 20px rgba(255, 51, 51, 0.5)' }}
   >
-    {settings.marqueeText}
+    <StoreAnnouncement />
   </p> 
 </div>
     <header className="bg-surface border-b-[3px] border-line px-4">

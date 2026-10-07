@@ -58,5 +58,18 @@ receipts and in-game delivery through the merchant's test/payment workflow.
 Automated checkout tests use mocked Tebex responses and never charge money.
 Server status uses mcsrvstat.us and may be cached for up to five minutes.
 
+SALES AND DISCOUNT CODES
+Manage sale prices and coupon eligibility in Tebex. The catalog reads current
+Tebex prices and discount flags; sale badges and the announcement update when
+the page opens, returns to the foreground, and every minute while visible.
+The announcement endpoint can cache current sale status for up to one minute.
+Coupon codes entered at checkout are always checked with Tebex, so new codes
+do not require website edits or a redeploy. The Headless API does not provide
+a public list of coupon codes, so private/restricted codes are not advertised
+automatically. There is no hardcoded discount code or permanent sale banner.
+For a storewide coupon, check Engagement > Coupons > Effective On in Tebex
+and any package exclusions. Tebex controls applicability and usage limits;
+the website shows its rejection reason and cannot override those settings.
+
 The old sample products.json is retained as source reference, not a catalog
 or checkout fallback. Live numeric package IDs are revalidated server-side.

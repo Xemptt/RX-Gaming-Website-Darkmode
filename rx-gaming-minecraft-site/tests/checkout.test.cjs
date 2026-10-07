@@ -1,13 +1,13 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const { loadTs } = require("./load-ts.cjs");
-function harness({ auth = false, authOptions = [{name:"Minecraft",url:"https://ident.tebex.io/verify"}], failAtPackage, malicious = false, voucherStatus, trustedIp = "203.0.113.10", configured = true } = {}) {
+function harness({ auth = false, authOptions = [{name:"Minecraft",url:"https://ident.tebex.io/verify"}], failAtPackage, malicious = false, voucherStatus, voucherDetail, packageOptions = [], trustedIp = "203.0.113.10", configured = true } = {}) {
   const jar = new Map();
   const calls = [];
   let failed = false;
   let created = 0;
   let basket = { ident: "basket-123", username: null, username_id: null, ip: trustedIp, complete: false, packages: [], coupons: [], giftcards: [], links: {} };
-  class StoreUnavailableError extends Error { constructor(message, status) { super(message); this.status=status; } }
+  class StoreUnavailableError extends Error { constructor(message, status, detail) { super(message); this.status=status; this.detail=detail; } }
   const service = {
     StoreUnavailableError,
     tebexAuthorization: () => {
@@ -28,6 +28,7 @@ function harness({ auth = false, authOptions = [{name:"Minecraft",url:"https://i
         return {data:structuredClone(basket)};
       }
       if (path.includes("/auth?")) return authOptions;
+      if (/^\/accounts\/test\/packages\/\d+$/.test(path)) return {data:{options:packageOptions,variables:[]}};
       if (path.endsWith("/packages")) {
         const payload=JSON.parse(init.body);
         if (failAtPackage === payload.package_id && !failed) {failed=true;throw new Error("Temporary upstream outage");}
@@ -37,10 +38,20 @@ function harness({ auth = false, authOptions = [{name:"Minecraft",url:"https://i
       }
       if (path.endsWith("/packages/remove")) { const id=JSON.parse(init.body).package_id; basket.packages=basket.packages.filter(p=>String(p.id)!==id); return {}; }
       if (/\/packages\/\d+$/.test(path) && init.method==="PUT") {basket.packages.find(p=>String(p.id)===path.split("/").pop()).in_basket.quantity=JSON.parse(init.body).quantity;return {};}
-      if (path.endsWith("/coupons/remove")) { basket.coupons=[]; return {}; }
-      if (path.endsWith("/coupons")) { if (voucherStatus) throw new StoreUnavailableError("Tebex rejected the code", voucherStatus); basket.coupons=[JSON.parse(init.body)]; return {data:structuredClone(basket)}; }
+      if (path.endsWith("/coupons/remove")) {
+        const code=JSON.parse(init.body || "{}").coupon_code;
+        assert.equal(typeof code,"string","Tebex requires the coupon_code being removed");
+        basket.coupons=basket.coupons.filter(coupon=>coupon.code!==code);
+        return {success:true};
+      }
+      if (path.endsWith("/coupons")) {
+        if (voucherStatus) throw new StoreUnavailableError("Tebex rejected the code", voucherStatus, voucherDetail);
+        const code=JSON.parse(init.body).coupon_code;
+        basket.coupons.push({code});
+        return {success:true};
+      }
       if (path.endsWith("/giftcards/remove")) { const code=JSON.parse(init.body).card_number; basket.giftcards=basket.giftcards.filter(card=>card.card_number!==code); return {}; }
-      if (path.endsWith("/giftcards")) { if (voucherStatus) throw new StoreUnavailableError("Tebex rejected the code", voucherStatus); basket.giftcards=[JSON.parse(init.body)]; return {data:structuredClone(basket)}; }
+      if (path.endsWith("/giftcards")) { if (voucherStatus) throw new StoreUnavailableError("Tebex rejected the code", voucherStatus, voucherDetail); basket.giftcards=[JSON.parse(init.body)]; return {success:true}; }
       return {data:structuredClone(basket)};
     }
   };
@@ -96,7 +107,7 @@ test("checkout synchronizes removals and changed quantities after cancellation",
 test("checkout applies a Tebex discount code to the basket",async()=>{
   const h=harness();const response=await h.POST(h.request({voucherType:"coupon",voucherCode:"RX-G"}));
   assert.equal(response.status,200);
-  assert.deepEqual(h.basket.coupons,[{coupon_code:"RX-G"}]);
+  assert.deepEqual(h.basket.coupons,[{code:"RX-G"}]);
   assert.ok(h.calls.some(c=>c.path.endsWith("/coupons")&&JSON.parse(c.init.body).coupon_code==="RX-G"));
 });
 test("checkout applies a Tebex gift card to the basket",async()=>{
@@ -109,6 +120,53 @@ test("invalid Tebex voucher codes return a clear error",async()=>{
   const h=harness({voucherStatus:422});const response=await h.POST(h.request({voucherType:"coupon",voucherCode:"NOT-VALID"}));
   assert.equal(response.status,422);
   assert.match((await response.json()).error,/could not be applied/i);
+});
+test("checkout shows the actual Tebex coupon eligibility reason",async()=>{
+  const reason="You have items in your basket where the coupon cannot be applied.";
+  const h=harness({voucherStatus:400,voucherDetail:reason});
+  const response=await h.POST(h.request({voucherType:"coupon",voucherCode:"RX-G"}));
+  const body=await response.json();
+  assert.equal(response.status,422);
+  assert.ok(body.error.includes(reason));
+  assert.equal(body.resumable,true);
+});
+test("service authentication failures are not reported as invalid discount codes",async()=>{
+  const h=harness({voucherStatus:401});
+  const response=await h.POST(h.request({voucherType:"coupon",voucherCode:"RX-G"}));
+  assert.equal(response.status,503);
+});
+test("retry keeps an existing coupon using Tebex's code response field",async()=>{
+  const h=harness();const body={voucherType:"coupon",voucherCode:"RX-G"};
+  assert.equal((await h.POST(h.request(body))).status,200);
+  assert.equal((await h.POST(h.request(body))).status,200);
+  assert.deepEqual(h.basket.coupons,[{code:"RX-G"}]);
+  assert.equal(h.calls.filter(c=>c.path.endsWith("/coupons")).length,1);
+  assert.equal(h.calls.filter(c=>c.path.endsWith("/coupons/remove")).length,0);
+});
+test("changing a coupon removes each old code with the required payload",async()=>{
+  const h=harness();await h.POST(h.request({voucherType:"coupon",voucherCode:"OLD"}));
+  h.basket.coupons.push({code:"ALSO-OLD"});
+  const response=await h.POST(h.request({voucherType:"coupon",voucherCode:"NEW"}));
+  assert.equal(response.status,200);
+  assert.deepEqual(h.basket.coupons,[{code:"NEW"}]);
+  assert.deepEqual(h.calls.filter(c=>c.path.endsWith("/coupons/remove")).map(c=>JSON.parse(c.init.body).coupon_code),["OLD","ALSO-OLD"]);
+});
+test("clearing the code clears saved coupons and gift cards",async()=>{
+  const h=harness();await h.POST(h.request({voucherType:"coupon",voucherCode:"RX-G"}));
+  h.basket.giftcards.push({card_number:"0123 4567"});
+  const response=await h.POST(h.request({voucherType:"coupon",voucherCode:""}));
+  assert.equal(response.status,200);
+  assert.deepEqual(h.basket.coupons,[]);
+  assert.deepEqual(h.basket.giftcards,[]);
+});
+test("switching between a coupon and gift card removes the previous type",async()=>{
+  const h=harness();await h.POST(h.request({voucherType:"coupon",voucherCode:"RX-G"}));
+  assert.equal((await h.POST(h.request({voucherType:"giftcard",voucherCode:"0123 4567"}))).status,200);
+  assert.deepEqual(h.basket.coupons,[]);
+  assert.deepEqual(h.basket.giftcards,[{card_number:"0123 4567"}]);
+  assert.equal((await h.POST(h.request({voucherType:"coupon",voucherCode:"RX-G"}))).status,200);
+  assert.deepEqual(h.basket.giftcards,[]);
+  assert.deepEqual(h.basket.coupons,[{code:"RX-G"}]);
 });
 test("saved anonymous baskets are recreated with the entered Java username",async()=>{
   const h=harness({authOptions:[]});h.jar.set("rx-basket",h.basket.ident);
@@ -144,5 +202,22 @@ test("a saved basket attributed to a different IP is replaced",async()=>{
   assert.equal(response.status,200);
   assert.equal(h.calls.filter(c=>c.path.endsWith("/baskets")&&c.init.method==="POST").length,2);
   assert.equal(h.basket.ip,"203.0.113.10");
+});
+
+test("a package's sole delivery server is sent using Tebex variable_data",async()=>{
+  const h=harness({packageOptions:[{name:"server",type:"dropdown",options:[{label:"RLCraft",value:2441063}]}]});
+  const response=await h.POST(h.request({voucherType:"coupon",voucherCode:"RX-G"}));
+  assert.equal(response.status,200);
+  const add=h.calls.find(call=>call.path.endsWith("/packages"));
+  assert.deepEqual(JSON.parse(add.init.body).variable_data,{server:"2441063"});
+  assert.deepEqual(h.basket.coupons,[{code:"RX-G"}]);
+});
+
+test("checkout does not choose a delivery server when the customer has a choice",async()=>{
+  const h=harness({packageOptions:[{name:"server",type:"dropdown",options:[{value:1},{value:2}]}]});
+  const response=await h.POST(h.request());
+  assert.equal(response.status,503);
+  assert.match((await response.json()).error,/select its options in the official store/);
+  assert.equal(h.calls.some(call=>call.path.endsWith("/packages")),false);
 });
 

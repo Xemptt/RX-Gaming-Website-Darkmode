@@ -2,13 +2,13 @@ import type { Product, ProductCategory, ProductMode } from "./products";
 import { getRealm } from "./realms";
 
 export class StoreUnavailableError extends Error {
-  constructor(message: string, public status?: number) { super(message); }
+  constructor(message: string, public status?: number, public detail?: string) { super(message); }
 }
 const apiRoot = "https://headless.tebex.io/api";
 function tebexErrorDetail(body: string): string | undefined {
   try {
     const payload = JSON.parse(body);
-    const candidates: unknown[] = [payload?.message, payload?.error, payload?.detail];
+    const candidates: unknown[] = [payload?.detail, payload?.message, payload?.error];
     if (Array.isArray(payload?.errors)) candidates.push(...payload.errors);
     else if (payload?.errors && typeof payload.errors === "object") {
       for (const value of Object.values(payload.errors)) {
@@ -57,16 +57,22 @@ export async function tebexRequest(path: string, init: RequestInit = {}) {
     throw new StoreUnavailableError(
       `Tebex ${statusText} (HTTP ${response.status}).${reason} Please try again or visit the official store.`,
       response.status,
+      detail,
     );
   }
   if (response.status === 204) return {};
   const text = await response.text();
-  return text ? JSON.parse(text) : {};
+  const data = text ? JSON.parse(text) : {};
+  if (data?.success === false) {
+    const detail = tebexErrorDetail(text);
+    throw new StoreUnavailableError("Tebex could not complete the request.", 422, detail);
+  }
+  return data;
 }
 export function getServerModeLabel(mode: string) { return getRealm(mode)?.name || "Network"; }
 type Category = {
   name: string; slug?: string; parent?: { name?: string; slug?: string } | null;
-  packages?: Array<{ id: number; name: string; description?: string | null; total_price: number; currency: string; image?: string | null; disable_quantity?: boolean; type?: string }>;
+  packages?: Array<{ id: number; name: string; description?: string | null; total_price: number; discount?: number; currency: string; image?: string | null; disable_quantity?: boolean; type?: string }>;
 };
 function detectMode(text: string): ProductMode {
   if (/insanecraft|\binsane\b|\banarchy\b/i.test(text)) return "anarchy";
@@ -196,7 +202,8 @@ export async function fetchCatalog(signal?: AbortSignal): Promise<Product[]> {
         id, name: pkg.name, description: typeof pkg.description === "string" ? pkg.description : undefined,
         price: pkg.total_price, currency: pkg.currency,
         disableQuantity: pkg.disable_quantity === true, recurring: pkg.type === "subscription",
-        isPromo: false, category: kind, mode: productMode, color: "#7C3AED",
+        isPromo: typeof pkg.discount === "number" && Number.isFinite(pkg.discount) && pkg.discount > 0,
+        category: kind, mode: productMode, color: "#7C3AED",
         img: typeof pkg.image === "string" && /^https:\/\//.test(pkg.image) ? pkg.image : "/1.png",
       });
     }

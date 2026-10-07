@@ -41,6 +41,15 @@ test("Tebex validation details explain a rejected request",async()=>{
   try {
     global.fetch=async()=>Response.json({title:"Request payload error",detail:"Basic auth credentials are required"},{status:422});
     const {tebexRequest,StoreUnavailableError}=loadTs("lib/tebex.ts");
-    await assert.rejects(tebexRequest("/test"),error=>error instanceof StoreUnavailableError&&error.status===422&&/Basic auth credentials are required/.test(error.message));
+    await assert.rejects(tebexRequest("/test"),error=>error instanceof StoreUnavailableError&&error.status===422&&error.detail==="Basic auth credentials are required"&&/Basic auth credentials are required/.test(error.message));
+  } finally {global.fetch=originalFetch;}
+});
+
+test("unsuccessful coupon responses cannot silently proceed to checkout",async()=>{
+  const originalFetch=global.fetch;
+  try {
+    global.fetch=async()=>Response.json({success:false,message:"This code has expired."});
+    const {tebexRequest,StoreUnavailableError}=loadTs("lib/tebex.ts");
+    await assert.rejects(tebexRequest("/test/coupons"),error=>error instanceof StoreUnavailableError&&error.status===422&&error.detail==="This code has expired.");
   } finally {global.fetch=originalFetch;}
 });
