@@ -4,6 +4,7 @@ import Link from "next/link";
 import storeSettings from "@/store-settings.json";
 
 export default function Footer() {
+    const hasYoutubeChannel = /^https:\/\/(?:www\.)?youtube\.com\/(?:@|channel\/|c\/|user\/)[^/?#]+/i.test(storeSettings.youtubeLink);
     return (
         /* LOCK LAYERS: Hardcoded z-40 depth and pointer-events-auto properties guarantee the cursor clicks through flawlessly */
         <footer className="mt-auto bg-page border-t-2 border-line pt-10 pb-6 w-full relative z-40 pointer-events-auto">
@@ -35,7 +36,7 @@ export default function Footer() {
                         <Link href="/careers" className="text-muted hover:text-foreground font-bold text-xs uppercase tracking-wider transition-colors block py-0.5 pointer-events-auto cursor-pointer">
                             Careers
                         </Link>
-                        <Link href="/documents" className="text-muted hover:text-foreground font-bold text-xs uppercase tracking-wider transition-colors block py-0.5 pointer-events-auto cursor-pointer">
+                        <Link href="/documents/1" className="text-muted hover:text-foreground font-bold text-xs uppercase tracking-wider transition-colors block py-0.5 pointer-events-auto cursor-pointer">
                             Documents
                         </Link>
                         <Link href="/server-details" className="text-muted hover:text-foreground font-bold text-xs uppercase tracking-wider transition-colors block py-0.5 pointer-events-auto cursor-pointer">
@@ -63,12 +64,12 @@ export default function Footer() {
                             </a>
                             
                             {/* FIXED YOUTUBE BOX LINK: Handcrafted precision pixel scale coordinates for perfect display framing */}
-                            <a href={storeSettings.youtubeLink} target="_blank" rel="noopener noreferrer" 
+                            {hasYoutubeChannel && <a href={storeSettings.youtubeLink} target="_blank" rel="noopener noreferrer"
                                 className="w-10 h-10 border-2 border-line flex items-center justify-center hover:bg-[#FF0000] hover:border-[#FF0000] hover:text-white text-muted transition-all pointer-events-auto cursor-pointer" aria-label="YouTube">
                                 <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
                                     <path d="M23.496 6.127a3.003 3.003 0 0 0-2.11-2.116C19.515 3.49 12 3.49 12 3.49s-7.515 0-9.386.52A3.005 3.003 0 0 0 .504 6.128C0 8.016 0 12 0 12s0 3.984.504 5.872a3.003 3.003 0 0 0 2.11 2.116c1.871.522 9.386.522 9.386.522s7.515 0 9.386-.522a3.005 3.003 0 0 0 2.11-2.116C24 15.984 24 12 24 12s0-3.984-.504-5.873Zm-14.415 9.42V8.453L15.35 12l-6.269 3.547Z" />
                                 </svg>
-                            </a>
+                            </a>}
                         </div>
                     </div>
                 </div>

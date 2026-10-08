@@ -2,8 +2,15 @@ import { notFound } from "next/navigation";
 import Navbar from "@/component/navbar";
 import Footer from "@/component/footer";
 import Catalog from "@/component/catalog";
-import { getRealm } from "@/lib/realms";
+import { getRealm, realms } from "@/lib/realms";
 import settings from "@/store-settings.json";
+export function generateStaticParams() {
+  return realms.map(realm => ({ slug: realm.id }));
+}
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const realm = getRealm((await params).slug);
+  return { title: realm ? `${realm.name} Store` : "Store not found" };
+}
 export default async function StoreModePage({ params }: { params: Promise<{ slug: string }> }) {
   const realm = getRealm((await params).slug);
   if (!realm) notFound();

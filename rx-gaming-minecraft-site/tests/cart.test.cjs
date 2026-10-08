@@ -32,3 +32,29 @@ test("cart actions enforce quantity limits and currency consistency", () => {
   store.updateQuantity("123",0); assert.equal(useCartStore.getState().items.length,0);
 });
 
+test("cart refresh uses current prices and quantity rules without discarding unavailable items", () => {
+  const { useCartStore } = loadTs("store/cart.ts");
+  const store = useCartStore.getState();
+  store.addItem(product);
+  store.updateQuantity(product.id, 3);
+  store.addItem({ ...product, id: "124" });
+  const unavailable = store.refreshProducts([{ ...product, price: 4, disableQuantity: true, img: "/new-image.png" }]);
+  assert.deepEqual(unavailable, ["124"]);
+  const items = useCartStore.getState().items;
+  assert.equal(items.length, 2);
+  assert.equal(items[0].product.price, 4);
+  assert.equal(items[0].quantity, 1);
+  assert.equal(items[0].product.disableQuantity, true);
+  assert.equal(items[0].product.img, product.img, "preserves realm-specific artwork");
+  assert.equal(items[1].product.price, 5, "keeps unavailable item until customer removes it");
+});
+
+test("adding an already capped rank refreshes its price without increasing quantity", () => {
+  const { useCartStore } = loadTs("store/cart.ts");
+  const store = useCartStore.getState();
+  store.addItem({ ...product, disableQuantity: true });
+  assert.match(store.addItem({ ...product, disableQuantity: true, price: 4 }), /maximum quantity/);
+  assert.equal(useCartStore.getState().items[0].product.price, 4);
+  assert.equal(useCartStore.getState().items[0].quantity, 1);
+});
+

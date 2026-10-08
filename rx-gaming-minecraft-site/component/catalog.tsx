@@ -36,9 +36,10 @@ export default function Catalog({ realm }: { realm: string }) {
   const [attempt, setAttempt] = useState(0);
   const addItem = useCartStore(state => state.addItem);
   const hydrated = useCartStore(state => state.hydrated);
+  useEffect(() => { setProducts(null); }, [realm]);
   useEffect(() => {
     const controller = new AbortController();
-    setProducts(null); setError("");
+    setError("");
     let pending = false;
     const refresh = async () => {
       if (document.hidden || pending) return;
@@ -69,8 +70,8 @@ export default function Catalog({ realm }: { realm: string }) {
   return <section aria-label="Store products" className="space-y-6">
     <p className="text-sm text-muted">Prices and availability come from the official store. Confirm your account, discounts and final total at Tebex checkout.</p>
     <p role="status" className="font-bold text-accent min-h-6">{feedback}</p>
-    {error ? <div role="alert" className="panel space-y-4"><h2 className="text-xl font-bold">Store temporarily unavailable</h2><p>{error}</p><button className="action-button" onClick={() => setAttempt(attempt + 1)}>Try again</button> <a className="underline font-bold" href={settings.tebexMainStore}>Visit the official Tebex store</a></div> :
-      products === null ? <p role="status" className="panel">Loading available products…</p> :
+    {error && <div role="alert" className="panel space-y-4"><h2 className="text-xl font-bold">{products === null ? "Store temporarily unavailable" : "Prices could not be refreshed"}</h2><p>{error}</p>{products !== null && <p>The last available products are shown below. Tebex will confirm current prices and availability at checkout.</p>}<button className="action-button" onClick={() => setAttempt(attempt + 1)}>Try again</button> <a className="underline font-bold" href={settings.tebexMainStore}>Visit the official Tebex store</a></div>}
+    {products === null ? (!error && <p role="status" className="panel">Loading available products…</p>) :
       products.length === 0 ? <div className="panel space-y-4"><h2 className="text-xl font-bold">No packages available yet</h2><p>Check the official store or come back soon.</p><a href={settings.tebexMainStore} className="action-button">Open official store</a></div> :
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">{products.map(product => <article className="panel flex flex-col gap-4" key={product.id}>
         <div className="relative h-40 overflow-hidden bg-black/20">

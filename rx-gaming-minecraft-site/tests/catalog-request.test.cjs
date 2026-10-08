@@ -2,6 +2,26 @@ const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const { loadTs } = require("./load-ts.cjs");
 const {readJsonBody,clientIp,checkoutOrigin}=loadTs("lib/request.ts");
+test("catalog endpoint provides current full cart catalog and rejects invalid realm filters", async () => {
+  let fullRequests = 0;
+  let realmRequests = 0;
+  const { GET } = loadTs("app/api/tebex/catalog/route.ts", {
+    "next/server": { NextResponse: Response },
+    "@/lib/tebex": {
+      fetchCatalog: async signal => { assert.ok(signal instanceof AbortSignal); fullRequests++; return [{ id: "123", price: 4 }]; },
+      fetchTebexProducts: async mode => { realmRequests++; assert.equal(mode, "survival"); return [{ id: "124" }]; },
+    },
+  });
+  const full = await GET(new Request("https://example.test/api/tebex/catalog"));
+  assert.equal(full.status, 200);
+  assert.deepEqual((await full.json()).products, [{ id: "123", price: 4 }]);
+  assert.equal((await GET(new Request("https://example.test/api/tebex/catalog?realm=rlcraft"))).status, 200);
+  for (const realm of ["", "unknown"]) {
+    assert.equal((await GET(new Request(`https://example.test/api/tebex/catalog?realm=${realm}`))).status, 400);
+  }
+  assert.equal(fullRequests, 1);
+  assert.equal(realmRequests, 1);
+});
 test("checkout uses the browser host and configured deployment origin without trusting forwarded hosts",()=>{
   const previous=process.env.SITE_URL;
   try {

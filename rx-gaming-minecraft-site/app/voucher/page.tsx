@@ -1,6 +1,8 @@
 "use client";
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import voucher from "@/public/voucher.png";
 import Navbar from "@/component/navbar";
 import Footer from "@/component/footer";
 import settings from "@/store-settings.json";
@@ -43,7 +45,7 @@ export default function VoucherPage() {
           <p className="text-sm">Tebex checks the code and confirms any balance or discount at checkout. <a href={settings.tebexMainStore} className="underline">Open the official store</a>.</p>
           <p className="text-sm">For in-game reward vouchers, <a href={settings.discordLink} className="underline">contact our Discord support</a>.</p>
         </div>
-        <img src="/voucher.png" alt="" className="w-full max-h-80 object-contain" />
+        <Image src={voucher} alt="" sizes="(max-width: 767px) 100vw, 464px" className="w-full h-auto max-h-80 object-contain" />
       </section>
     </main><Footer /></div>;
 }

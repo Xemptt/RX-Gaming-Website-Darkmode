@@ -3,6 +3,8 @@
 import Navbar from "../../component/navbar";
 import Footer from "../../component/footer";
 import { useState } from "react";
+import Image from "next/image";
+import trophy from "@/public/trophy.png";
 import storeSettings from "../../store-settings.json";
 
 type Position = {
@@ -77,8 +79,9 @@ export default function CareersPage() {
                     
                     {/* Retro Trophy Skin Graphic Element Vector Box */}
                     <div className="relative z-10 animate-[bounce_3s_ease-in-out_infinite]">
-                        <img 
-                            src="/trophy.png" 
+                        <Image
+                            src={trophy}
+                            sizes="(max-width: 767px) 128px, 160px"
                             alt="Staff Recruitment Trophy" 
                             className="w-32 h-32 md:w-40 md:h-34 object-contain select-none pointer-events-none drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]" 
                         />

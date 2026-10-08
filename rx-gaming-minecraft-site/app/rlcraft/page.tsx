@@ -134,7 +134,7 @@ export default function StandaloneRLCraftProfile() {
                                     {modpackList.map((mod, index) => (
                                         <div key={index} className="flex items-center gap-2 py-1 border-b border-dashed border-line last:border-0">
                                             <span className="text-[#22D3EE] font-black text-sm">▶</span>
-                                            <span className="text-foreground tracking-wide">{mod}</span>
+                                            <span className="min-w-0 [overflow-wrap:anywhere] text-foreground tracking-wide">{mod}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -167,7 +167,7 @@ export default function StandaloneRLCraftProfile() {
                                     {bannedItemsList.map((item, index) => (
                                         <div key={item} className="flex items-center gap-2 py-1 border-b border-dashed border-line last:border-0">
                                             <span className="text-red-500 font-black text-sm">?</span>
-                                            <span className="text-foreground tracking-wide">{item}</span>
+                                            <span className="min-w-0 [overflow-wrap:anywhere] text-foreground tracking-wide">{item}</span>
                                         </div>
                                     ))}
                                 </div>

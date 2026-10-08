@@ -4,6 +4,8 @@
 import Navbar from "../../../component/navbar";
 import Footer from "../../../component/footer";
 import storeSettings from "../../../store-settings.json";
+import Image from "next/image";
+import Link from "next/link";
 
 type RealmRegion = {
     id: string;
@@ -61,14 +63,17 @@ export default function StoreMainPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-white font-bold">
                         {regions.map((region) => (
                             region.active ? (
-                                <a
+                                <Link
                                     key={region.id}
                                     href={region.storeUrl}
                                     className="relative h-48 border-4 border-frame shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] overflow-hidden group cursor-pointer transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-none"
                                 >
-                                    <div
-                                        className="absolute inset-0 bg-cover bg-center transition-opacity duration-500 group-hover:opacity-0"
-                                        style={{ backgroundImage: `url('${region.banner}')` }}
+                                    <Image
+                                        src={region.banner}
+                                        alt=""
+                                        fill
+                                        sizes="(max-width: 767px) 100vw, 432px"
+                                        className="object-cover transition-opacity duration-500 group-hover:opacity-0"
                                     />
 
                                     {/* Immersive portal effect animation */}
@@ -87,15 +92,18 @@ export default function StoreMainPage() {
                                         <h2 className="text-2xl uppercase tracking-wider text-white [text-shadow:2px_2px_0px_rgba(0,0,0,1)] group-hover:text-[#C084FC] transition-colors duration-300">{region.name}</h2>
                                         <p className="text-[#22D3EE] text-[10px] uppercase tracking-wider [text-shadow:1px_1px_0px_rgba(0,0,0,1)] group-hover:animate-pulse">{region.statusText}</p>
                                     </div>
-                                </a>
+                                </Link>
                             ) : (
                                 <div
                                     key={region.id}
                                     className="relative h-48 border-4 border-frame shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] overflow-hidden group cursor-not-allowed text-left transition-all duration-300 opacity-60"
                                 >
-                                    <div
-                                        className="absolute inset-0 bg-cover bg-center"
-                                        style={{ backgroundImage: `url('${region.banner}')` }}
+                                    <Image
+                                        src={region.banner}
+                                        alt=""
+                                        fill
+                                        sizes="(max-width: 767px) 100vw, 432px"
+                                        className="object-cover"
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none flex flex-col justify-end p-6" />
                                     <div className="relative z-10 h-full flex flex-col justify-end p-6 text-left pointer-events-none">

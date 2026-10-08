@@ -14,6 +14,8 @@ export default function CartPage() {
   const [voucherType, setVoucherType] = useState<"coupon" | "giftcard">("coupon");
   const [voucherCode, setVoucherCode] = useState("");
   const [resume, setResume] = useState(false);
+  const [unavailable, setUnavailable] = useState<string[]>([]);
+  const [catalogWarning, setCatalogWarning] = useState("");
   const pending = useRef(false);
   useEffect(() => {
     setResume(new URLSearchParams(window.location.search).get("resume") === "1");
@@ -26,10 +28,37 @@ export default function CartPage() {
     window.addEventListener("pageshow", restore);
     return () => window.removeEventListener("pageshow", restore);
   }, []);
+  useEffect(() => {
+    if (!hydrated) return;
+    const controller = new AbortController();
+    let refreshing = false;
+    const refresh = async () => {
+      if (document.hidden || refreshing || pending.current || !useCartStore.getState().items.length) return;
+      refreshing = true;
+      try {
+        const response = await fetch("/api/tebex/catalog", {
+          cache: "no-store", signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]),
+        });
+        const data = await response.json();
+        if (!response.ok || !Array.isArray(data.products)) throw new Error("Catalog unavailable");
+        if (!controller.signal.aborted && !pending.current) {
+          setUnavailable(useCartStore.getState().refreshProducts(data.products));
+          setCatalogWarning("");
+        }
+      } catch {
+        if (!controller.signal.aborted) setCatalogWarning("We couldn't refresh current prices. Your cart is saved; Tebex will confirm prices and availability at checkout.");
+      } finally { refreshing = false; }
+    };
+    void refresh();
+    const timer = window.setInterval(refresh, 60000);
+    document.addEventListener("visibilitychange", refresh);
+    return () => { controller.abort(); window.clearInterval(timer); document.removeEventListener("visibilitychange", refresh); };
+  }, [hydrated]);
   const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   const currencies = new Set(items.map(item => item.product.currency));
+  const hasUnavailable = items.some(item => unavailable.includes(item.product.id));
   const checkout = async () => {
-    if (pending.current || !items.length) return;
+    if (pending.current || !items.length || hasUnavailable) return;
     pending.current = true; setProcessing(true); setError("");
     try {
       sessionStorage.setItem("rx-checkout-username", username.trim());
@@ -65,7 +94,7 @@ export default function CartPage() {
           <section aria-label="Cart items" className="space-y-4">
             {items.map(({ product, quantity }) => <article key={product.id} className="panel flex flex-wrap items-center gap-4">
               <img src={product.img} alt="" className="h-16 w-16 object-contain" onError={event => { if (!event.currentTarget.src.endsWith("/1.png")) event.currentTarget.src = "/1.png"; }} />
-              <div className="flex-1 min-w-32"><h2 className="text-lg font-bold break-words">{product.name}</h2><p>{(product.price * quantity).toFixed(2)} {product.currency}</p>{product.recurring && <p className="text-sm">Subscription</p>}</div>
+              <div className="flex-1 min-w-32"><h2 className="text-lg font-bold break-words">{product.name}</h2><p>{(product.price * quantity).toFixed(2)} {product.currency}</p>{product.recurring && <p className="text-sm">Subscription</p>}{unavailable.includes(product.id) && <p className="text-sm text-error">This item is no longer available. Remove it to continue checkout.</p>}</div>
               <div className="flex items-center gap-2">
                 <button disabled={processing} className="quantity-button" aria-label={`Decrease quantity of ${product.name}`} onClick={() => updateQuantity(product.id, quantity - 1)}>−</button>
                 <span aria-label={`Quantity: ${quantity}`} className="w-8 text-center font-bold">{quantity}</span>
@@ -78,6 +107,8 @@ export default function CartPage() {
           <form onSubmit={event => { event.preventDefault(); void checkout(); }} className="panel space-y-5" aria-label="Checkout">
             <h2 className="text-2xl font-bold">Order summary</h2>
             <p className="text-sm">Estimated subtotal</p>
+            {catalogWarning && <p role="status" className="text-sm">{catalogWarning}</p>}
+            {hasUnavailable && <p role="alert" className="text-sm text-error">Remove unavailable items before checking out.</p>}
             {currencies.size === 1 ? <p className="text-3xl font-bold text-accent">{total.toFixed(2)} {items[0].product.currency}</p> : <p role="alert">Please remove items until your cart uses one currency.</p>}
             <label htmlFor="minecraft-username" className="block font-bold">Minecraft Java username</label>
             <input id="minecraft-username" name="username" type="text" required minLength={3} maxLength={16} pattern="[A-Za-z0-9_]{3,16}" value={username} disabled={processing} onChange={event => setUsername(event.target.value)} autoComplete="off" spellCheck={false} aria-describedby="username-help" className="w-full border-4 border-frame p-3" />
@@ -94,7 +125,7 @@ export default function CartPage() {
             <p className="text-sm"><Link href="/documents/1" className="underline">Terms of Service</Link> · <Link href="/documents/2" className="underline">Privacy Policy</Link></p>
             {resume && <p role="status" className="text-sm font-bold">Back from account verification? Continue to prepare your order.</p>}
             {error && <p role="alert" className="text-error font-bold">{error}</p>}
-            <button disabled={processing || currencies.size !== 1} type="submit" className="action-button w-full">{processing ? "Preparing checkout…" : resume ? "Continue checkout" : "Checkout with Tebex"}</button>
+            <button disabled={processing || currencies.size !== 1 || hasUnavailable} type="submit" className="action-button w-full">{processing ? "Preparing checkout…" : resume ? "Continue checkout" : "Checkout with Tebex"}</button>
             <a href={settings.tebexMainStore} className="block underline text-sm">Open the official store separately</a>
             <p className="text-xs text-muted">Your cart stays saved until you clear it. The separate store link does not transfer these items.</p>
           </form>

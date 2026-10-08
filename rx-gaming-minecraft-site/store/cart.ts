@@ -7,6 +7,7 @@ export type { CartItem };
 type CartStore = {
   items: CartItem[]; hydrated: boolean; hydrate: () => void;
   addItem: (product: Product) => string | null;
+  refreshProducts: (products: Product[]) => string[];
   removeItem: (id: string) => void; updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void; getTotalPrice: () => number; getItemCount: () => number;
 };
@@ -18,10 +19,23 @@ export const useCartStore = create<CartStore>()(persist((set, get) => ({
     const current = get().items;
     if (current.some(item => item.product.currency !== product.currency)) return "Please check out or clear the cart before adding another currency.";
     const existing = current.find(item => item.product.id === product.id);
-    if (existing && (product.disableQuantity || existing.quantity >= MAX_QUANTITY)) return "This item is already at its maximum quantity.";
+    if (existing && (product.disableQuantity || existing.quantity >= MAX_QUANTITY)) {
+      set({ items: current.map(item => item.product.id === product.id ? { product: valid.product, quantity: product.disableQuantity ? 1 : item.quantity } : item) });
+      return "This item is already at its maximum quantity.";
+    }
     if (!existing && current.length >= MAX_CART_ITEMS) return "Your cart is full. Please check out first.";
     set({ items: existing ? current.map(item => item.product.id === product.id ? { product: valid.product, quantity: item.quantity + 1 } : item) : [...current, valid] });
     return null;
+  },
+  refreshProducts: products => {
+    const missing: string[] = [];
+    set({ items: get().items.map(item => {
+      const latest = products.find(product => product.id === item.product.id);
+      const valid = latest && sanitizeCart([{ product: latest, quantity: item.quantity }])[0];
+      if (!valid) { missing.push(item.product.id); return item; }
+      return { ...valid, product: { ...valid.product, img: item.product.img } };
+    }) });
+    return missing;
   },
   removeItem: id => set({ items: get().items.filter(item => item.product.id !== id) }),
   updateQuantity: (id, quantity) => {

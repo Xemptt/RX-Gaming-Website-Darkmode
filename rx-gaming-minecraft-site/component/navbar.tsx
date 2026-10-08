@@ -8,7 +8,7 @@ import { useCustomCursor } from "@/component/appearance-provider";
 import { useCartStore } from "@/store/cart";
 import settings from "@/store-settings.json";
 import StoreAnnouncement from "@/component/store-announcement";
-const links = [["/", "Home"], ["/server-details", "Details"], ["/store/main", "Store"], ["/careers", "Careers"], ["/voucher", "Voucher"], ["/documents", "Documents"], ["/changelog", "Changelog"]];
+const links = [["/", "Home"], ["/server-details", "Details"], ["/store/main", "Store"], ["/careers", "Careers"], ["/voucher", "Voucher"], ["/documents/1", "Documents"], ["/changelog", "Changelog"]];
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const { enabled: cursor, toggle: toggleCursor } = useCustomCursor();
@@ -19,7 +19,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const currentPage = (href: string) => pathname === href ? "page" as const :
     ((href === "/store/main" && pathname.startsWith("/store/")) ||
-      (href === "/documents" && pathname.startsWith("/documents/"))) ? "location" as const : undefined;
+      (href === "/documents/1" && pathname.startsWith("/documents/"))) ? "location" as const : undefined;
   const count = useCartStore(state => state.getItemCount());
   useEffect(() => { setMounted(true); }, []);
   useEffect(() => { setOpen(false); }, [pathname]);
@@ -32,8 +32,7 @@ export default function Navbar() {
   return <div className="relative z-50 w-full">
 <div className="bg-[#1E1B4B] flex items-center gap-2 py-2 px-4 overflow-hidden"> 
   <p 
-    className="text-sm text-center leading-relaxed font-bold tracking-wide w-full text-[#FF3333] animate-pulse"
-    style={{ textShadow: '0 0 8px rgba(255, 51, 51, 0.8), 0 0 20px rgba(255, 51, 51, 0.5)' }}
+    className="text-sm text-center leading-relaxed font-bold tracking-wide w-full text-red-200"
   >
     <StoreAnnouncement />
   </p> 

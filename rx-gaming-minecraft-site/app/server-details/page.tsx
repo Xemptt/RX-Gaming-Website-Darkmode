@@ -4,6 +4,7 @@ import Footer from "@/component/footer";
 import ServerCounter from "@/component/servercounter";
 import { realms } from "@/lib/realms";
 import { useState } from "react";
+import Link from "next/link";
 export default function ServerDetailsPage() {
   const [message, setMessage] = useState("");
   const copy = async (address: string) => {
@@ -26,7 +27,7 @@ export default function ServerDetailsPage() {
         <ServerCounter serverId={realm.id} serverName={realm.name} />
         <p className="font-bold select-all break-all">{realm.host}:{realm.port}</p>
         <button className="action-button" onClick={() => void copy(`${realm.host}:${realm.port}`)}>Copy {realm.name} IP</button>
-        <a className="action-button block" href={`/${realm.id}`}>Explore {realm.name} profile →</a>
+        <Link className="action-button block" href={`/${realm.id}`}>Explore {realm.name} profile →</Link>
       </section>)}</div>
     </main><Footer /></div>;
 }

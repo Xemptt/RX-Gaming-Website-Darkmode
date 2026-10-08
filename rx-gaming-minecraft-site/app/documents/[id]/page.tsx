@@ -3,6 +3,18 @@ import Navbar from "@/component/navbar";
 import Footer from "@/component/footer";
 import Link from "next/link";
 import { documents } from "@/lib/documents";
+
+export function generateStaticParams() {
+  return documents.map(document => ({ id: String(document.id) }));
+}
+
+export const dynamicParams = false;
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return { title: documents.find(document => String(document.id) === id)?.title ?? "Document not found" };
+}
+
 export default async function DocumentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const doc = documents.find(doc => String(doc.id) === id);
