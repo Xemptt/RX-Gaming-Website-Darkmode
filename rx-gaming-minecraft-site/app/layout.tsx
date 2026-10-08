@@ -23,6 +23,10 @@ export const metadata: Metadata = {
     keywords: ["minecraft", "minecraft server", "store", "ranks", "addons", "community"],
     authors: [{ name: storeSettings.serverName }],
     creator: storeSettings.serverName,
+    icons: {
+        icon: [{ url: "/icon.png", type: "image/png", sizes: "512x512" }],
+        apple: [{ url: "/apple-icon.png", type: "image/png", sizes: "180x180" }],
+    },
     openGraph: {
         type: "website",
         locale: "en_US",
@@ -32,10 +36,10 @@ export const metadata: Metadata = {
         description: `Welcome to the official ${storeSettings.serverName} Network rank and item shop. Join our amazing community realms today!`,
         images: [
             {
-                url: "/header.png",
-                width: 1200,
-                height: 630,
-                alt: storeSettings.serverName,
+                url: "/logo.png",
+                width: 1264,
+                height: 1264,
+                alt: `${storeSettings.serverName} logo`,
             },
         ],
     },
@@ -43,7 +47,7 @@ export const metadata: Metadata = {
         card: "summary_large_image",
         title: `${storeSettings.serverName} | Minecraft Store`,
         description: `Welcome to the official ${storeSettings.serverName} Network rank and item shop. Join our amazing community realms today!`,
-        images: ["/header.png"],
+        images: ["/logo.png"],
     },
 };
 
