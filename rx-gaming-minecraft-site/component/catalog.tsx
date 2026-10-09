@@ -1,8 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { Product } from "@/lib/products";
 import { useCartStore } from "@/store/cart";
+import { MAX_QUANTITY } from "@/lib/validation";
 import settings from "@/store-settings.json";
 
 function formatPackageDescription(description: string) {
@@ -29,13 +30,57 @@ function isRankProduct(product: Product) {
   return product.category === "ranks" || /^(?:(?:insanecraft|rlcraft|rank|vip)\s+)?(?:extreme|mental|loony|nutty|crazy|insane|adventurer|champion|warlord|dragonborn)(?:\s+(?:rank|vip|package|pack|upgrade)){0,2}$/i.test(title);
 }
 
+function PackageCartControls({ product, onFeedback }: { product: Product; onFeedback: (message: string) => void }) {
+  const quantity = useCartStore(state => state.items.find(item => item.product.id === product.id)?.quantity ?? 0);
+  const hydrated = useCartStore(state => state.hydrated);
+  const controls = useRef<HTMLDivElement>(null);
+  const moveFocus = useRef(false);
+
+  useEffect(() => {
+    if (moveFocus.current) {
+      controls.current?.querySelector<HTMLElement>("[data-cart-action]")?.focus();
+      moveFocus.current = false;
+    }
+  }, [quantity]);
+
+  const increase = () => {
+    const store = useCartStore.getState();
+    const previous = store.items.find(item => item.product.id === product.id)?.quantity ?? 0;
+    const error = store.addItem(product);
+    if (error) { onFeedback(error); return; }
+    moveFocus.current = previous === 0;
+    const count = useCartStore.getState().items.find(item => item.product.id === product.id)?.quantity ?? 0;
+    onFeedback(`${product.name} added. Quantity in cart: ${count}.`);
+  };
+
+  const decrease = () => {
+    const store = useCartStore.getState();
+    const count = store.items.find(item => item.product.id === product.id)?.quantity ?? 0;
+    if (!count) return;
+    moveFocus.current = count === 1;
+    store.updateQuantity(product.id, count - 1);
+    const remaining = useCartStore.getState().items.find(item => item.product.id === product.id)?.quantity ?? 0;
+    onFeedback(remaining === 0 ? `${product.name} removed from your cart.` : `${product.name}. Quantity in cart: ${remaining}.`);
+  };
+
+  return <div ref={controls} className="mt-auto space-y-3">
+    {hydrated && quantity > 0 ? <>
+      <div role="group" aria-label={`Quantity of ${product.name} in cart`} className="flex items-center justify-between gap-3">
+        <button type="button" className="quantity-button shrink-0" onClick={decrease} aria-label={quantity === 1 ? `Remove ${product.name} from cart` : `Decrease quantity of ${product.name}`}>−</button>
+        <span className="text-sm font-bold text-center">In cart: {quantity}</span>
+        <button type="button" className="quantity-button shrink-0" onClick={increase} disabled={product.disableQuantity || quantity >= MAX_QUANTITY} aria-label={`Increase quantity of ${product.name}`}>+</button>
+      </div>
+      {product.disableQuantity && <p className="text-xs text-muted text-center">Limited to one per order.</p>}
+      <Link data-cart-action href="/cart" className="action-button w-full" aria-label={`Go to cart with ${product.name}`}>Go to cart →</Link>
+    </> : <button data-cart-action type="button" disabled={!hydrated} className="action-button w-full" onClick={increase}>Add to cart</button>}
+  </div>;
+}
+
 export default function Catalog({ realm }: { realm: string }) {
   const [products, setProducts] = useState<Product[] | null>(null);
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
   const [attempt, setAttempt] = useState(0);
-  const addItem = useCartStore(state => state.addItem);
-  const hydrated = useCartStore(state => state.hydrated);
   useEffect(() => { setProducts(null); }, [realm]);
   useEffect(() => {
     const controller = new AbortController();
@@ -88,7 +133,7 @@ export default function Catalog({ realm }: { realm: string }) {
           <p className="text-sm text-muted whitespace-pre-line">{formatPackageDescription(product.description)}</p>
         </div>}
         {product.recurring && <p className="text-sm font-bold">Subscription — billing period and renewal terms are shown at checkout.</p>}
-        <button disabled={!hydrated} className="action-button mt-auto" onClick={() => { const error = addItem(product); setFeedback(error || `${product.name} added. Quantity in cart: ${useCartStore.getState().items.find(item => item.product.id === product.id)?.quantity}.`); }}>Add to cart</button>
+        <PackageCartControls product={product} onFeedback={setFeedback} />
       </article>)}</div>}
     <Link href="/cart" className="inline-block underline font-bold">View cart →</Link>
   </section>;
