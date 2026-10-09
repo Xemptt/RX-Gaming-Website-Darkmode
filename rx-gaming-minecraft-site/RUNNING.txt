@@ -73,3 +73,28 @@ the website shows its rejection reason and cannot override those settings.
 
 The old sample products.json is retained as source reference, not a catalog
 or checkout fallback. Live numeric package IDs are revalidated server-side.
+
+DISCORD RANK DELIVERY
+Create an application in https://discord.com/developers/applications and open
+OAuth2. Register this exact redirect for production:
+  https://site.rx-gaming.online/api/discord/callback
+Set DISCORD_CLIENT_ID and DISCORD_CLIENT_SECRET in Vercel Production environment
+variables, then redeploy. Use the OAuth2 Client Secret, not a bot token. Never
+commit the secret or use a NEXT_PUBLIC_ prefix. SITE_URL must match the origin
+where customers connect (https://site.rx-gaming.online for this deployment).
+Local development needs a separate registered http://localhost:3000/api/discord/callback
+redirect and SITE_URL=http://localhost:3000. Preview domains need their own
+registered redirect and matching SITE_URL; production credentials alone do not
+register new preview URLs.
+
+Buyers connect Discord from their cart, approve the identify permission, and
+return to checkout with their cart, Minecraft username and voucher retained.
+The site verifies the account with Discord and keeps a signed, HttpOnly account
+cookie for 24 hours. OAuth tokens are not stored. Tebex receives the verified
+Discord ID as package variable_data.discord_id; request-body IDs are ignored.
+Disconnecting or changing accounts discards the prepared basket, not the cart.
+Packages with Discord delivery require a connected account even if Tebex marks
+the option optional, to avoid completing the order without the expected role.
+Role assignment remains controlled by the package's Tebex Discord Actions and
+the existing Tebex bot. The buyer must join the server; the bot needs Manage
+Roles permission and a role above each rank role. No new bot is required.

@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { useCartStore } from "@/store/cart";
 import { MAX_QUANTITY, trustedTebexUrl } from "@/lib/validation";
 import settings from "@/store-settings.json";
+import DiscordConnect from "@/component/discord-connect";
 export default function CartPage() {
   const { items, hydrated, removeItem, updateQuantity, clearCart } = useCartStore();
   const [processing, setProcessing] = useState(false);
@@ -16,6 +17,7 @@ export default function CartPage() {
   const [resume, setResume] = useState(false);
   const [unavailable, setUnavailable] = useState<string[]>([]);
   const [catalogWarning, setCatalogWarning] = useState("");
+  const [discordRevision, setDiscordRevision] = useState(0);
   const pending = useRef(false);
   useEffect(() => {
     setResume(new URLSearchParams(window.location.search).get("resume") === "1");
@@ -57,10 +59,7 @@ export default function CartPage() {
   const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   const currencies = new Set(items.map(item => item.product.currency));
   const hasUnavailable = items.some(item => unavailable.includes(item.product.id));
-  const checkout = async () => {
-    if (pending.current || !items.length || hasUnavailable) return;
-    pending.current = true; setProcessing(true); setError("");
-    try {
+  const saveDraft = () => {
       sessionStorage.setItem("rx-checkout-username", username.trim());
       if (voucherCode.trim()) {
         sessionStorage.setItem("rx-voucher-type", voucherType);
@@ -69,11 +68,16 @@ export default function CartPage() {
         sessionStorage.removeItem("rx-voucher-type");
         sessionStorage.removeItem("rx-voucher-code");
       }
-    } catch {}
+  };
+  const checkout = async () => {
+    if (processing || pending.current || !items.length || hasUnavailable) return;
+    pending.current = true; setProcessing(true); setError("");
+    try { saveDraft(); } catch {}
     try {
       const response = await fetch("/api/tebex/checkout", { method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: username.trim(), resume, voucherType, voucherCode: voucherCode.trim(), items: items.map(item => ({ packageId: item.product.id, quantity: item.quantity })) }), signal: AbortSignal.timeout(60000) });
       const data = await response.json();
+      if (data.needsDiscord) setDiscordRevision(value => value + 1);
       if (!response.ok) throw new Error(data.error || "Unable to start checkout.");
       const url = trustedTebexUrl(data.checkoutUrl);
       if (!url) throw new Error("The checkout address was invalid. Please try again.");
@@ -113,6 +117,7 @@ export default function CartPage() {
             <label htmlFor="minecraft-username" className="block font-bold">Minecraft Java username</label>
             <input id="minecraft-username" name="username" type="text" required minLength={3} maxLength={16} pattern="[A-Za-z0-9_]{3,16}" value={username} disabled={processing} onChange={event => setUsername(event.target.value)} autoComplete="off" spellCheck={false} aria-describedby="username-help" className="w-full border-4 border-frame p-3" />
             <p id="username-help" className="text-xs">Use the exact Java username that should receive these items.</p>
+            <DiscordConnect key={discordRevision} disabled={processing} saveDraft={saveDraft} onBusyChange={setProcessing} />
             <label htmlFor="voucher-type" className="block font-bold">Voucher type</label>
             <select id="voucher-type" value={voucherType} disabled={processing} onChange={event => setVoucherType(event.target.value as "coupon" | "giftcard")} className="w-full border-4 border-frame p-3">
               <option value="coupon">Discount code</option>

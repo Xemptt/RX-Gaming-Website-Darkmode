@@ -1,6 +1,68 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const { loadTs } = require("./load-ts.cjs");
+const discord = loadTs("lib/discord.ts");
+
+function connectDiscord(h, t, id = "234567890123456789") {
+  const oldId = process.env.DISCORD_CLIENT_ID;
+  const oldSecret = process.env.DISCORD_CLIENT_SECRET;
+  process.env.DISCORD_CLIENT_ID = "123456789012345678";
+  process.env.DISCORD_CLIENT_SECRET = "test-discord-secret";
+  t.after(() => {
+    if (oldId === undefined) delete process.env.DISCORD_CLIENT_ID; else process.env.DISCORD_CLIENT_ID = oldId;
+    if (oldSecret === undefined) delete process.env.DISCORD_CLIENT_SECRET; else process.env.DISCORD_CLIENT_SECRET = oldSecret;
+  });
+  h.jar.set(discord.DISCORD_SESSION_COOKIE, discord.createDiscordSession({ id, username: "test_player" }));
+}
+
+test("Discord packages require a verified account and ignore request-body IDs", async () => {
+  const h = harness({ packageOptions: [{ name: "discord_id", type: "discord_id", required: false }] });
+  const response = await h.POST(h.request({ discordId: "234567890123456789" }));
+  assert.equal(response.status, 409);
+  assert.equal((await response.json()).needsDiscord, true);
+  assert.equal(h.calls.some(call => call.init.method === "POST"), false);
+});
+
+test("checkout sends verified Discord and delivery-server variables together and retries without duplication", async t => {
+  const h = harness({ packageOptions: [
+    { name: "server", type: "dropdown", options: [{ value: 2441063 }] },
+    { name: "discord_id", type: "discord_id", required: false },
+  ] });
+  connectDiscord(h, t);
+  assert.equal((await h.POST(h.request())).status, 200);
+  const add = h.calls.find(call => call.path.endsWith("/packages") && call.init.method === "POST");
+  assert.deepEqual(JSON.parse(add.init.body).variable_data, { server: "2441063", discord_id: "234567890123456789" });
+  assert.equal((await h.POST(h.request())).status, 200);
+  assert.equal(h.calls.filter(call => call.path.endsWith("/baskets") && call.init.method === "POST").length, 1);
+  assert.equal(h.basket.packages.length, 1);
+});
+
+test("changing Discord account or upgrading a legacy basket creates a basket with current role delivery", async t => {
+  const h = harness({ packageOptions: [{ name: "discord_id", type: "discord_id" }] });
+  connectDiscord(h, t);
+  assert.equal((await h.POST(h.request())).status, 200);
+  h.jar.set(discord.DISCORD_SESSION_COOKIE, discord.createDiscordSession({ id: "334567890123456789", username: "other_player" }));
+  assert.equal((await h.POST(h.request())).status, 200);
+  const adds = h.calls.filter(call => call.path.endsWith("/packages") && call.init.method === "POST");
+  assert.equal(JSON.parse(adds[1].init.body).variable_data.discord_id, "334567890123456789");
+  assert.equal(h.calls.filter(call => call.path.endsWith("/baskets") && call.init.method === "POST").length, 2);
+  h.jar.delete(discord.DISCORD_BASKET_COOKIE);
+  assert.equal((await h.POST(h.request())).status, 200);
+  assert.equal(h.calls.filter(call => call.path.endsWith("/baskets") && call.init.method === "POST").length, 3);
+});
+
+test("new Discord requirements on an existing package force that package to be prepared again", async t => {
+  const options = [];
+  const h = harness({ packageOptions: options });
+  connectDiscord(h, t);
+  assert.equal((await h.POST(h.request())).status, 200);
+  options.push({ name: "discord_id", type: "discord_id" });
+  assert.equal((await h.POST(h.request())).status, 200);
+  const adds = h.calls.filter(call => call.path.endsWith("/packages") && call.init.method === "POST");
+  assert.equal(adds.length, 2);
+  assert.equal(JSON.parse(adds[1].init.body).variable_data.discord_id, "234567890123456789");
+});
+
 function harness({ auth = false, authOptions = [{name:"Minecraft",url:"https://ident.tebex.io/verify"}], failAtPackage, malicious = false, voucherStatus, voucherDetail, packageOptions = [], trustedIp = "203.0.113.10", configured = true } = {}) {
   const jar = new Map();
   const calls = [];

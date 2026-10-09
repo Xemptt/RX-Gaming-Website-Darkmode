@@ -9,6 +9,10 @@ import {
 } from "@/lib/tebex";
 import { validateCheckoutItems, trustedTebexUrl } from "@/lib/validation";
 import {
+  readDiscordSession, matchesDiscordBasket, bindDiscordBasket, discordCookieOptions,
+  DISCORD_SESSION_COOKIE, DISCORD_BASKET_COOKIE,
+} from "@/lib/discord";
+import {
   readJsonBody,
   RequestBodyError,
   checkoutOrigin,
@@ -129,6 +133,43 @@ export async function POST(request: Request) {
     };
 
     const jar = await cookies();
+    const discord = readDiscordSession(jar.get(DISCORD_SESSION_COOKIE)?.value);
+    const packageVariables = new Map<string, Record<string, string>>();
+    let needsDiscord = false;
+
+    // Read current options even for saved baskets: a package may have gained
+    // Discord delivery since the customer's last checkout attempt.
+    for (const item of items) {
+      const details = (await api(accountPath(`/packages/${item.packageId}`))).data;
+      const options = details?.options ?? [];
+      if (!details || !Array.isArray(options)) {
+        throw new StoreUnavailableError("Package options are unavailable. Please try again.");
+      }
+      const variableData: Record<string, string> = {};
+      for (const option of options) {
+        if (option?.name === "discord_id" && option?.type === "discord_id") {
+          needsDiscord = true;
+          if (discord) variableData.discord_id = discord.id;
+          continue;
+        }
+        const value = option?.options?.[0]?.value;
+        if (option?.name !== "server" || option?.type !== "dropdown" || !Array.isArray(option.options) || option.options.length !== 1 || !/^[1-9]\d*$/.test(String(value))) {
+          throw new StoreUnavailableError("This item needs additional choices. Please select its options in the official store.");
+        }
+        variableData.server = String(value);
+      }
+      if (Array.isArray(details.variables) && details.variables.length) {
+        throw new StoreUnavailableError("This item needs additional details. Please complete them in the official store.");
+      }
+      packageVariables.set(item.packageId, variableData);
+    }
+
+    // Do not silently skip optional Discord delivery: the buyer expects a role.
+    if (needsDiscord && !discord) {
+      return NextResponse.json({ error: "Connect Discord above so Tebex can deliver your rank's Discord role.", needsDiscord: true }, { status: 409 });
+    }
+
+    const discordPackages = [...packageVariables].filter(([, variables]) => variables.discord_id).map(([id]) => id);
     const savedBasket = jar.get("rx-basket")?.value;
     let basket;
 
@@ -149,6 +190,7 @@ export async function POST(request: Request) {
 
       if (
         basket?.complete ||
+        (needsDiscord && discord && !matchesDiscordBasket(jar.get(DISCORD_BASKET_COOKIE)?.value, savedBasket, discord.id, discordPackages)) ||
         (basket && basket.ip !== customerIp) ||
         (basket?.username &&
           basket.username.toLowerCase() !== username.toLowerCase())
@@ -201,6 +243,10 @@ export async function POST(request: Request) {
       maxAge: 1800,
       path: "/",
     });
+
+    if (needsDiscord && discord) {
+      jar.set(DISCORD_BASKET_COOKIE, bindDiscordBasket(ident, discord.id, discordPackages), discordCookieOptions(origin, 1800));
+    }
 
     resumable = true;
 
@@ -299,24 +345,7 @@ export async function POST(request: Request) {
           );
         }
       } else {
-        // The category listing omits required package options. Read them from
-        // Tebex and fill a server selection only when there is one choice.
-        const details = (await api(accountPath(`/packages/${item.packageId}`))).data;
-        const options = details?.options ?? [];
-        if (!details || !Array.isArray(options)) {
-          throw new StoreUnavailableError("Package options are unavailable. Please try again.");
-        }
-        const variableData: Record<string, string> = {};
-        for (const option of options) {
-          const value = option?.options?.[0]?.value;
-          if (option?.name !== "server" || option?.type !== "dropdown" || !Array.isArray(option.options) || option.options.length !== 1 || !/^[1-9]\d*$/.test(String(value))) {
-            throw new StoreUnavailableError("This item needs additional choices. Please select its options in the official store.");
-          }
-          variableData.server = String(value);
-        }
-        if (Array.isArray(details.variables) && details.variables.length) {
-          throw new StoreUnavailableError("This item needs additional details. Please complete them in the official store.");
-        }
+        const variableData = packageVariables.get(item.packageId)!;
         await api(`/baskets/${ident}/packages`, {
           method: "POST",
           body: JSON.stringify({
