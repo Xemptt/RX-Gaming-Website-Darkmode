@@ -114,6 +114,10 @@ export default function CartPage() {
             {catalogWarning && <p role="status" className="text-sm">{catalogWarning}</p>}
             {hasUnavailable && <p role="alert" className="text-sm text-error">Remove unavailable items before checking out.</p>}
             {currencies.size === 1 ? <p className="text-3xl font-bold text-accent">{total.toFixed(2)} {items[0].product.currency}</p> : <p role="alert">Please remove items until your cart uses one currency.</p>}
+            <div className="border-2 border-line bg-surface-muted p-3 space-y-2">
+              <h3 className="text-sm font-bold">Taxes &amp; final total</h3>
+              <p className="text-xs leading-relaxed text-muted">Taxes can vary by location. Tebex confirms applicable taxes, discounts and the final total before you pay.</p>
+            </div>
             <label htmlFor="minecraft-username" className="block font-bold">Minecraft Java username</label>
             <input id="minecraft-username" name="username" type="text" required minLength={3} maxLength={16} pattern="[A-Za-z0-9_]{3,16}" value={username} disabled={processing} onChange={event => setUsername(event.target.value)} autoComplete="off" spellCheck={false} aria-describedby="username-help" className="w-full border-4 border-frame p-3" />
             <p id="username-help" className="text-xs">Use the exact Java username that should receive these items.</p>
@@ -126,7 +130,7 @@ export default function CartPage() {
             <label htmlFor="voucher-code" className="block font-bold">{voucherType === "giftcard" ? "Gift card number" : "Discount code"}</label>
             <input id="voucher-code" type="text" value={voucherCode} disabled={processing} maxLength={128} autoComplete="off" spellCheck={false} onChange={event => setVoucherCode(event.target.value)} aria-describedby="voucher-help" className="w-full border-4 border-frame p-3" />
             <p id="voucher-help" className="text-xs">Optional. Tebex will validate your code and confirm the final total.</p>
-            <p className="text-sm leading-relaxed">Tebex confirms your email, taxes and final price. No payment is taken on this page.</p>
+            <p className="text-sm leading-relaxed">You’ll complete your payment securely on Tebex. No payment is taken on this page.</p>
             <p className="text-sm"><Link href="/documents/1" className="underline">Terms of Service</Link> · <Link href="/documents/2" className="underline">Privacy Policy</Link></p>
             {resume && <p role="status" className="text-sm font-bold">Back from account verification? Continue to prepare your order.</p>}
             {error && <p role="alert" className="text-error font-bold">{error}</p>}

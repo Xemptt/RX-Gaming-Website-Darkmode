@@ -113,7 +113,7 @@ export default function Catalog({ realm }: { realm: string }) {
     };
   }, [realm, attempt]);
   return <section aria-label="Store products" className="space-y-6">
-    <p className="text-sm text-muted">Prices and availability come from the official store. Confirm your account, discounts and final total at Tebex checkout.</p>
+    <p className="text-sm text-muted">Prices and availability are updated from Tebex. Applicable taxes, discounts and the final total are confirmed at checkout before you pay.</p>
     <p role="status" className="font-bold text-accent min-h-6">{feedback}</p>
     {error && <div role="alert" className="panel space-y-4"><h2 className="text-xl font-bold">{products === null ? "Store temporarily unavailable" : "Prices could not be refreshed"}</h2><p>{error}</p>{products !== null && <p>The last available products are shown below. Tebex will confirm current prices and availability at checkout.</p>}<button className="action-button" onClick={() => setAttempt(attempt + 1)}>Try again</button> <a className="underline font-bold" href={settings.tebexMainStore}>Visit the official Tebex store</a></div>}
     {products === null ? (!error && <p role="status" className="panel">Loading available products…</p>) :
@@ -128,6 +128,7 @@ export default function Catalog({ realm }: { realm: string }) {
         <h2 className="text-xl font-bold break-words">{product.name}</h2>
         {product.isPromo && <span className="self-start bg-[#ffcc00] text-black px-2 py-1 text-sm font-bold">On sale</span>}
         <p className="text-2xl text-accent font-bold">{product.price.toFixed(2)} {product.currency}</p>
+        <p className="text-xs leading-relaxed text-muted">Taxes may vary by location. Final total confirmed at Tebex checkout.</p>
         {product.description && formatPackageDescription(product.description) && <div className="border-t border-frame/60 pt-3">
           <h3 className="text-sm font-bold mb-1">What’s included</h3>
           <p className="text-sm text-muted whitespace-pre-line">{formatPackageDescription(product.description)}</p>
