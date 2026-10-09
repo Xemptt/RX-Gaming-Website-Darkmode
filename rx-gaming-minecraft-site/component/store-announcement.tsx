@@ -37,5 +37,9 @@ export default function StoreAnnouncement() {
     };
   }, []);
 
-  return <>{onSale && <><Link href="/store/main" className="underline">SALE IS LIVE — SEE CURRENT OFFERS</Link> • </>}{settings.marqueeText}</>;
+  return <>
+    {settings.announcementCoupon && <><Link href="/voucher" className="underline underline-offset-4">USE CODE {settings.announcementCoupon} AT CHECKOUT</Link> • </>}
+    {onSale && <><Link href="/store/main" className="underline">SALE IS LIVE — SEE CURRENT OFFERS</Link> • </>}
+    {settings.marqueeText}
+  </>;
 }

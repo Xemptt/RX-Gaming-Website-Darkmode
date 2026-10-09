@@ -51,6 +51,12 @@ h1, h2, h3, p { overflow-wrap: anywhere; }
 @keyframes announcement { 0%, 15% { transform: translateX(0); } 85%, 100% { transform: translateX(-25%); } }
 .announcement { width: max-content; animation: announcement 25s linear infinite alternate; }
 .announcement.paused, .announcement:hover { animation-play-state: paused; }
+@keyframes store-announcement-pulse {
+  0%, 100% { opacity: 1; text-shadow: 0 0 8px #ff3333, 0 0 18px #ff333380; }
+  50% { opacity: .75; text-shadow: none; }
+}
+.store-announcement { animation: store-announcement-pulse 2s ease-in-out infinite; }
+.store-announcement:hover, .store-announcement:focus-within { animation-play-state: paused; }
 /* Small PNGs work across browser/OS cursor decoders; touch input ignores cursor. */
 .minecraft-cursor, .minecraft-cursor * { cursor: url("/pickaxe.png") 12 8, auto; }
 .minecraft-cursor :is(a, button, summary, [role="button"], label[for]),

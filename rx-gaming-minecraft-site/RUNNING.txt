@@ -66,7 +66,9 @@ The announcement endpoint can cache current sale status for up to one minute.
 Coupon codes entered at checkout are always checked with Tebex, so new codes
 do not require website edits or a redeploy. The Headless API does not provide
 a public list of coupon codes, so private/restricted codes are not advertised
-automatically. There is no hardcoded discount code or permanent sale banner.
+automatically. The public coupon advert is configured with announcementCoupon
+in store-settings.json (currently RX-G); update or clear it when that campaign
+changes. It is displayed independently of automatic package sale detection.
 For a storewide coupon, check Engagement > Coupons > Effective On in Tebex
 and any package exclusions. Tebex controls applicability and usage limits;
 the website shows its rejection reason and cannot override those settings.

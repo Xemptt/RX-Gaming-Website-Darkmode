@@ -32,7 +32,7 @@ export default function Navbar() {
   return <div className="relative z-50 w-full">
 <div className="bg-[#1E1B4B] flex items-center gap-2 py-2 px-4 overflow-hidden"> 
   <p 
-    className="text-sm text-center leading-relaxed font-bold tracking-wide w-full text-red-200"
+    className="store-announcement text-sm text-center leading-relaxed font-bold tracking-wide w-full text-red-200"
   >
     <StoreAnnouncement />
   </p> 
