@@ -37,14 +37,14 @@ export default function HomePage() {
             name: "Coming soon!",
             banner: "/practice_bg.png",
             active: false,
-            summary: "Practice mode is in development.",
+            summary: "In Development.",
         },
         {
             id: "skywars",
             name: "Coming soon!",
             banner: "/skywars_bg.png",
             active: false,
-            summary: "SkyWars is in development.",
+            summary: "In Development.",
         },
     ];
 
