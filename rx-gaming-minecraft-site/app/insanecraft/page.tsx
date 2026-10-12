@@ -89,7 +89,6 @@ export default function StandaloneInsanecraftProfile() {
         "draconicevolution_creative_exchanger",
         "danknull_dank_null_6",
         "bewitchment_blessed_stone",
-        "bloodmagic_sacrificial_dagger",
         "botania_pool",
         "buildinggadgets_constructionpastecontainercreative",
         "chancecubes_creative_pendant",
